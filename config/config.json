@@ -1,0 +1,10 @@
+{
+    "version" : "0",
+    "data_locations" : [
+        {
+            "location" : "/home/mschouwen/Documents/ilwisdata/openeodata"
+        }
+    ],
+    "stac_version" : "1.0",
+    "links" : [{"rel" : "Some general info", "href" : "https://some/itc/website", "title" : "OpenEO catalog for ITC"}]
+}
