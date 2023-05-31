@@ -1,0 +1,1 @@
+OPERATION_SCHEMA_NUMBER = {'type' : [ 'number', 'null']}
