@@ -2,10 +2,10 @@ from workflow.workflow import Worklflow
 from globals import globalsSingleton
 from constants.constants import *
 
-def get(key,values,  default):
+def get(key,values,  defaultValue):
     if key in values:
         return values[key]
-    return default
+    return defaultValue
 
 class Schema:
     def __init__(self, parm):
