@@ -15,6 +15,7 @@ def initOperationMetadata():
     file_names = [f for f in os.listdir(current_dir) if f.endswith('.py')]
     subdirectory = 'operations'
     # Iterate over the file names
+    operationsMetaData = {}
     for file_name in file_names:
         # Remove the file extension to get the module name
         module_name = file_name[:-3]
@@ -22,7 +23,7 @@ def initOperationMetadata():
         # Import the module dynamically
         module = importlib.import_module(f'{subdirectory}.{module_name}', package=__package__)
         
-        operationsMetaData = {}
+
         if hasattr(module, 'registerOperation'):
             opObject = module.registerOperation()
             operationsMetaData[opObject.name] = opObject

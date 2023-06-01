@@ -1,6 +1,9 @@
 from workflow.workflow import Worklflow
 from globals import globalsSingleton
+from processmanager import globalProcessManager
 from constants.constants import *
+import multiprocessing
+
 
 def get(key,values,  defaultValue):
     if key in values:
@@ -54,7 +57,7 @@ class OpenEOParameter:
                 if tp in ['bands', 'temporal', 'other']:
                     self.spatial_organization.append(tp, tp)
 
-class OpenEOProcess:
+class OpenEOProcess(multiprocessing.Process):
     def __init__(self, request_doc):
         processValues = request_doc['process']
 
@@ -79,4 +82,12 @@ class OpenEOProcess:
             for ex in processValues['exceptions'].items():
                 self.exceptions[ex[0]] = ex[1]
 
+    def run(self):
+        if self.workflow != None:
+            globalProcessManager.createNewEmptyOutput(self.workflow.job_id)
+            outputInfo = self.workflow.run(True)
 
+            if outputInfo["status"]:
+                globalProcessManager.setOutput(self.workflow.job_id, outputInfo)
+  
+        

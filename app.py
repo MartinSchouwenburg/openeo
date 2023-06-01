@@ -9,6 +9,8 @@ from openeoprocessdiscovery import OpenEOIPProcessDiscovery
 from openeoresult import OpenEOIPResult
 from openeofileformats import OpenEOIPFileFormats
 from openeojobs import OpenEOIPJobs
+from processmanager import ProcessManager, globalProcessManager
+from threading import Thread
 
 import os
 import json
@@ -31,6 +33,19 @@ api.add_resource( OpenEOIPFileFormats, '/file_formats')
 api.add_resource( OpenEOIPServices, '/services')
 api.add_resource( OpenEOIPServiceTypes, '/service_types')
 api.add_resource( OpenEOIPJobs, '/jobs') 
+
+def startProcesses():
+    while globalProcessManager.running:
+        eoprocess = None
+        with globalProcessManager.lockProcessQue:
+            if not len(globalProcessManager.processQueue) == 0:
+                eoprocess = globalProcessManager.processQueue.pop()
+        if eoprocess != None:
+            eoprocess.run()
+
+
+t1 = Thread(target=startProcesses)
+t1.start()
 
 
 if __name__ == '__main__':
