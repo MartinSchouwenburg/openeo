@@ -16,9 +16,16 @@ def initOperationMetadata():
     subdirectory = 'operations'
     # Iterate over the file names
     operationsMetaData = {}
-    for file_name in file_names:
+    deltaWatch = {}
+    for filename in file_names:
         # Remove the file extension to get the module name
-        module_name = file_name[:-3]
+        fullPath = os.path.join(current_dir,  filename)
+        modifiedDate = int(os.path.getmtime(fullPath))
+        if filename in deltaWatch:
+            if modifiedDate == deltaWatch[filename]:
+                continue
+
+        module_name = filename[:-3]
 
         # Import the module dynamically
         module = importlib.import_module(f'{subdirectory}.{module_name}', package=__package__)
@@ -27,14 +34,6 @@ def initOperationMetadata():
         if hasattr(module, 'registerOperation'):
             opObject = module.registerOperation()
             operationsMetaData[opObject.name] = opObject
-
-
-        
-       # o1 = MultiplyOperation()
-       # operationsMetaData[o1.name] = o1
-
-        #o1 = DummyLongFunc()
-        # operationsMetaData[o1.name] = o1
- 
+            deltaWatch[filename] = modifiedDate
 
     return operationsMetaData

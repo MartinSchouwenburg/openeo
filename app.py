@@ -35,14 +35,7 @@ api.add_resource( OpenEOIPServiceTypes, '/service_types')
 api.add_resource( OpenEOIPJobs, '/jobs') 
 
 def startProcesses():
-    while globalProcessManager.running:
-        eoprocess = None
-        with globalProcessManager.lockProcessQue:
-            if not len(globalProcessManager.processQueue) == 0:
-                eoprocess = globalProcessManager.processQueue.pop()
-        if eoprocess != None:
-            eoprocess.run()
-
+    globalProcessManager.startProcesses()
 
 t1 = Thread(target=startProcesses)
 t1.start()
@@ -50,3 +43,4 @@ t1.start()
 
 if __name__ == '__main__':
     app.run()
+    globalProcessManager.stop()
