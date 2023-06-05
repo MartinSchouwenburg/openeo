@@ -37,6 +37,18 @@ class ProcessManager:
     def addOutputProgress(self, id, progress):
         with self.lockOutput:
             self.outputs[id].progress = progress
+    
+    def stop(self):
+        self.running = False
+
+    def startProcesses(self):
+        while self.running:
+            eoprocess = None
+            with self.lockProcessQue:
+                if not len(self.processQueue) == 0:
+                    eoprocess = self.processQueue.pop()
+            if eoprocess != None:
+                eoprocess.run()
 
 globalProcessManager  = ProcessManager()
 
