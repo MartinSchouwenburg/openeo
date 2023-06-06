@@ -24,6 +24,8 @@ class MultiplyOperation(OpenEoOperation):
         self.addLink('about', 'http://mathworld.wolfram.com/Product.html', 'Product explained by Wolfram MathWorld' )
         self.addLink('about', 'https://ieeexplore.ieee.org/document/8766229', 'IEEE Standard 754-2019 for Floating-Point Arithmetic')
 
+        self.kind = PDPREDEFINED
+
         self.a = UNDEFNUMBER
         self.b = UNDEFNUMBER
 

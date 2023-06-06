@@ -16,6 +16,7 @@ class DummyLongFunc(OpenEoOperation):
         self.addInputParameter('a', 'why not', OPERATION_SCHEMA_NUMBER)
 
         self.addOutputParameter('to complete things',OPERATION_SCHEMA_NUMBER)
+        self.kind = PDUSERDEFINED
 
         self.a = UNDEFNUMBER
 
