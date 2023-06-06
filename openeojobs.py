@@ -1,7 +1,6 @@
-from flask import make_response, jsonify, request, Response
-from flask_restful import Api, Resource
+from flask import make_response, jsonify, request
+from flask_restful import Resource
 from workflow.openeoprocess import OpenEOProcess
-from multiprocessing import Process
 from processmanager import globalProcessManager
 from datetime import datetime
 
