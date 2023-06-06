@@ -13,6 +13,7 @@ class Worklflow(OpenEoOperation):
         self.workflowGraph = {}
         self.outputNodes = []
         self.job_id = uuid.uuid4() 
+        self.sourceGraph = process_graph
         for processKey,processValues in process_graph.items():
             grNode = WorkflowNode(processValues)
             self.workflowGraph[processKey] = grNode
@@ -31,6 +32,9 @@ class Worklflow(OpenEoOperation):
         except:
             return createOutput(False, "Unknown exception", DTERROR)
 
+    def processGraph(self):
+        return self.sourceGraph
+    
 
     def id2Node(self, id):
         for node in self.workflowGraph.items():
