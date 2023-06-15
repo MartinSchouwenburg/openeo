@@ -1,5 +1,5 @@
-from workflow.workflow import Worklflow
-from globals import globalsSingleton
+from workflow.workflow import Workflow
+from globals import globalsSingleton, getOperation
 from processmanager import globalProcessManager
 from constants.constants import *
 import multiprocessing
@@ -59,28 +59,42 @@ class OpenEOParameter:
 
 class OpenEOProcess(multiprocessing.Process):
     def __init__(self, request_doc):
+        if not 'process' in request_doc:
+            raise Exception("missing \'process\' key returns definition")
+        
         processValues = request_doc['process']
 
         self.workflow = None
         self.id = get('id', processValues, '')
         self.summary = get('summary', processValues, '')
         self.description = get('description', processValues, '')
-        self.workflow = Worklflow(get('process_graph', processValues, None))
+        self.workflow = Workflow(get('process_graph', processValues, None), getOperation)
         self.parameters = []
         dd = 'parameters' in processValues
         if 'parameters' in processValues:
             for parameter in processValues['parameters']:
                 self.parameters.append(OpenEOParameter(parameter))
-        self.returns = {}
-        self.returns['description'] = get('description', processValues['returns'], '')
-        self.returns['schema'] = Schema(processValues['returns']['schema'])
         self.categories = get('categories', processValues, [])
         self.deprecated = get('deprecated', processValues, False)
         self.experimental = get('experimental', processValues, False)
         self.exceptions = {}
         if "exceptions" in processValues:
             for ex in processValues['exceptions'].items():
-                self.exceptions[ex[0]] = ex[1]
+                self.exceptions[ex[0]] = ex[1]        
+                       
+        self.returns = {}
+        if 'returns' in processValues:
+            returns = processValues['returns']
+
+            self.returns['description'] = get('description', returns, '')
+            
+            if 'schema' in request_doc:
+                self.returns['schema'] = Schema(returns['schema'])
+            else:
+                raise Exception("missing \'schema\' key returns definition")
+        
+     
+   
 
     def run(self):
         if self.workflow != None:
