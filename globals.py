@@ -2,9 +2,12 @@ import os
 import json
 from pathlib import Path
 import pickle
-import glob
-from openeooperation import OpenEoOperation
 from operations.registerOperations import initOperationMetadata 
+
+def getOperation(operationName)        :
+    if  operationName in globalsSingleton.operations:
+        return globalsSingleton.operations[operationName]
+    return None
 
 class Globals : 
     def __new__(cls):
@@ -14,7 +17,7 @@ class Globals :
 
     openeoip_config = None
     internal_database = {}
-    operations = initOperationMetadata()
+    operations = initOperationMetadata(getOperation)
 
     def initGlobals(self):
         if  self.openeoip_config == None:
@@ -68,7 +71,7 @@ class Globals :
                 data = f.read()
             self.internal_database = pickle.loads(data) 
             return True
-        
+
     
         
 globalsSingleton = Globals()
