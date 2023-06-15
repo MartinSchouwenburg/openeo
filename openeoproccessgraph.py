@@ -5,10 +5,12 @@ from constants.constants import *
 
 class OpenEOProcessGraph(Resource):
     def get(self, name):
-        operations = []
+        oper = {}
         for operation in globalsSingleton.operations.values() :
             if hasattr(operation, 'kind') and operation.name == name and (operation.kind  | PDUSERDEFINED) == 1:
-                operations.append(operation.toDict())
-        processes = {'processes' : operations}            
+                oper = operation.toDict()
 
-        return make_response(jsonify(processes))
+        if hasattr(operation, 'sourceGraph'):
+            operation['process_graph'] = operation.sourceGraph
+
+        return make_response(jsonify(operation))
