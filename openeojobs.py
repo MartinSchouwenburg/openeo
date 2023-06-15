@@ -14,18 +14,21 @@ def runProcess(job):
 class OpenEOIPJobs(Resource):
     def post(self):
         request_doc = request.get_json()
-        process = OpenEOProcess(request_doc)
-        globalProcessManager.addProcess(process)
+        try:
+            process = OpenEOProcess(request_doc)
+            globalProcessManager.addProcess(process)
 
-        res = { "job_id" : str(process.workflow.job_id),
-                    "status" : "submitted",
-                    "submitted" : str(datetime.now()),
-                    "links" : {
-                        "href" :  request.base_url + "/" + str(process.workflow.job_id),
-                        "rel" : 'self',
-                        "type" : "application/json"
-                    }
-                    }
-        return make_response(jsonify(res),200)
+            res = { "job_id" : str(process.workflow.job_id),
+                        "status" : "submitted",
+                        "submitted" : str(datetime.now()),
+                        "links" : {
+                            "href" :  request.base_url + "/" + str(process.workflow.job_id),
+                            "rel" : 'self',
+                            "type" : "application/json"
+                        }
+                        }
+            return make_response(jsonify(res),200)
+        except Exception as ex:
+            return make_response(jsonify({"job_id" : 0, "job_info" :str(ex)}),404)
 
         
