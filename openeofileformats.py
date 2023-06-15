@@ -20,4 +20,4 @@ OUTPUT_FORMATS = {
 
 class OpenEOIPFileFormats(Resource):
     def get(self):
-        return jsonify(OUTPUT_FORMATS()) 
+        return jsonify(OUTPUT_FORMATS) 
