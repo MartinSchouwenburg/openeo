@@ -1,6 +1,7 @@
 import os
 import json
 
+operations1 = {}
 
 class OpenEoOperation:
     name = ''
@@ -12,7 +13,7 @@ class OpenEoOperation:
     exceptions = {}
     examples = []
     links = []
-    runnable = False
+    runnable = False    
 
     def toDict(self):
         iparameters = []
