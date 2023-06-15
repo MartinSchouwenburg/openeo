@@ -1,5 +1,4 @@
 from workflow.worklfownode import WorkflowNode
-from globals import globalsSingleton
 from constants.constants import *
 from openeooperation import * 
 import copy
@@ -9,10 +8,11 @@ import traceback
 class ExecutionNode :
 
 
-    def __init__(self, node, workflow):
+    def __init__(self, node, workflow, getOperation):
         self.workflowNode = node
         self.workflow = workflow
         self.outputInfo = None
+        self.getOperation = getOperation
 
     def run(self):
         ok = False        
@@ -41,9 +41,8 @@ class ExecutionNode :
                     return False                     
 
         processNode = self.workflowNode[1]
-
-        if processNode.process_id in globalsSingleton.operations:
-            processObj = globalsSingleton.operations[processNode.process_id]
+        processObj = self.getOperation(processNode.process_id)
+        if  processObj != None:
             arguments = processNode.argumentValues
             executeObj =  copy.deepcopy(processObj)
             message = executeObj.prepare(arguments)
