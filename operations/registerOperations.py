@@ -1,12 +1,10 @@
-from openeooperation import OpenEoOperation
-#from operations.multiply import MultiplyOperation
-#from operations.dummylongfunc import DummyLongFunc
+from pathlib import Path
+from workflow.workflow import Workflow
 import os
 import importlib
+import json
 
-def initOperationMetadata():
-
-
+def initOperationMetadata(getOperation):
 
 # Specify the subdirectory path
     current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -35,5 +33,20 @@ def initOperationMetadata():
             opObject = module.registerOperation()
             operationsMetaData[opObject.name] = opObject
             deltaWatch[filename] = modifiedDate
+
+    # udf files
+    home = Path.home()
+    udfFolder = os.path.join(home, 'Documents/openeo/udf')
+    file_names = [f for f in os.listdir(udfFolder) if f.endswith('.udf')]
+    for filename in file_names:
+        udfpath = os.path.join(udfFolder, filename)        
+        f = open(udfpath)
+        modifiedDate = int(os.path.getmtime(udfpath))
+        data = json.load(f)
+        wf = Workflow(data, getOperation)
+        operationsMetaData[wf.name] = wf
+        deltaWatch[filename] = modifiedDate
+        
+
 
     return operationsMetaData
