@@ -88,7 +88,7 @@ class OpenEOProcess(multiprocessing.Process):
 
             self.returns['description'] = get('description', returns, '')
             
-            if 'schema' in request_doc:
+            if 'schema' in returns:
                 self.returns['schema'] = Schema(returns['schema'])
             else:
                 raise Exception("missing \'schema\' key returns definition")
