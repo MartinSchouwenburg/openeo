@@ -34,7 +34,7 @@ class ExecutionNode :
             if ( wfNode.argumentValues[arg[0]] == None): # not calculated yet
                 fromNodeId = arg[1]['from_node']
                 backNode = self.workflow.id2Node(fromNodeId)
-                exNode = ExecutionNode(backNode,self.workflow)
+                exNode = ExecutionNode(backNode,self.workflow, self.getOperation)
                 if exNode.run():
                      self.workflowNode[1].argumentValues[arg[0]] = exNode.outputInfo["value"]
                 else:
