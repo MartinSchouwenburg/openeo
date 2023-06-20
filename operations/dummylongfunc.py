@@ -1,7 +1,7 @@
 from openeooperation import *
 from operations.operationconstants import *
 from constants.constants import *
-from datetime import datetime
+import time
 
 
 class DummyLongFunc(OpenEoOperation):
@@ -29,19 +29,9 @@ class DummyLongFunc(OpenEoOperation):
 
     def run(self, waituntilfinished):
             if self.runnable:
-                response = {}
-                b = 0
-                lim = int(self.a * 100)
-                i = 0
-                t1 = datetime.timestamp(datetime.now())
-                for i in range(0,lim):
-                    b = self.a * i
+                time.sleep(40.0)
 
-                t2 = datetime.timestamp(datetime.now())
-
-                b = t2 - t1                   
-
-                return createOutput(True, b, DTNUMBER)
+                return createOutput(True, 23, DTNUMBER)
             
             return createOutput(False, "operation no runnable", DTERROR)
 
