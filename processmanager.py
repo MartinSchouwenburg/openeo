@@ -29,7 +29,7 @@ class ProcessManager:
         with self.lockProcessQue:
             self.processQueue.append((username, eoproces))
 
-    def createNewEmptyOutput(self, id):
+    def createNewEmptyOutput(self, username, id):
         with self.lockOutput:
             self.outputs[id] = OutputInfo()
 

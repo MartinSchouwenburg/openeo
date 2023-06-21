@@ -98,7 +98,7 @@ class OpenEOProcess(multiprocessing.Process):
 
     def run(self, username):
         if self.workflow != None:
-            globalProcessManager.createNewEmptyOutput(self.workflow.job_id)
+            globalProcessManager.createNewEmptyOutput(username, self.workflow.job_id)
             outputInfo = self.workflow.run(True)
 
             if outputInfo["status"]:
