@@ -14,8 +14,6 @@ from openeoproccessgraph import OpenEOProcessGraph
 from processmanager import globalProcessManager
 from threading import Thread
 
-import os
-import json
 import sqlite3 as sqll3db
 
 #init part
