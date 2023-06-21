@@ -1,5 +1,8 @@
 import threading
+from multiprocessing import Process
 
+def worker(openeoprocess):
+    openeoprocess[1].run(openeoprocess[0])
 
 class OutputInfo:
     def __init__(self):
@@ -22,9 +25,9 @@ class ProcessManager:
         self.outputs = {}
         self.running = True
 
-    def addProcess(self, eoproces):
+    def addProcess(self, username, eoproces):
         with self.lockProcessQue:
-            self.processQueue.append(eoproces)
+            self.processQueue.append((username, eoproces))
 
     def createNewEmptyOutput(self, id):
         with self.lockOutput:
@@ -48,7 +51,8 @@ class ProcessManager:
                 if not len(self.processQueue) == 0:
                     eoprocess = self.processQueue.pop()
             if eoprocess != None:
-                eoprocess.run()
+                p = Process(target=worker, args=(eoprocess,))
+                p.start()
 
 globalProcessManager  = ProcessManager()
 
