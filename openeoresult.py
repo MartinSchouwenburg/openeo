@@ -2,13 +2,15 @@ from flask_restful import Resource
 from flask import make_response, jsonify, request, Response
 from constants.constants import *
 from workflow.openeoprocess import OpenEOProcess
+from userinfo import UserInfo
 
 
 class OpenEOIPResult(Resource):
     def post(self):
         request_doc = request.get_json()
+        user = UserInfo(request)
         try:
-            process = OpenEOProcess(request_doc)
+            process = OpenEOProcess(user, request_doc)
 
             if process.workflow != None:
                 outputInfo = process.workflow.run(False)

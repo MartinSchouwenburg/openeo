@@ -17,8 +17,8 @@ class OpenEOIPJobs(Resource):
         request_doc = request.get_json()
         user = UserInfo(request)
         try:
-            process = OpenEOProcess(request_doc)
-            globalProcessManager.addProcess(user.username, process)
+            process = OpenEOProcess(user, request_doc)
+            globalProcessManager.addProcess(process)
 
             res = { "job_id" : str(process.workflow.job_id),
                         "status" : "submitted",
@@ -34,7 +34,9 @@ class OpenEOIPJobs(Resource):
             return make_response(jsonify({"job_id" : 0, "job_info" :str(ex)}),404)
         
     def get(self):
-        return "laters"
+        user = UserInfo(request)
+        jobs = globalProcessManager.allJobs4User(user)
+        return make_response(jsonify({'jobs' : jobs}),200)
         
 
         

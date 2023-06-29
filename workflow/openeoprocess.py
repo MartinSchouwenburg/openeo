@@ -1,14 +1,17 @@
 from workflow.workflow import Workflow
-from globals import globalsSingleton, getOperation
+from globals import getOperation
 from processmanager import globalProcessManager
 from constants.constants import *
 import multiprocessing
+from datetime import datetime
+from constants.constants import *
 
 
 def get(key,values,  defaultValue):
     if key in values:
         return values[key]
     return defaultValue
+
 
 class Schema:
     def __init__(self, parm):
@@ -45,7 +48,7 @@ class OpenEOParameter:
             for parm in parms:
                 self.parameters.append(OpenEOParameter(parm))
 
-        if subt == 'datacude':
+        if subt == 'datacube':
             dimensions = parm['dimensions']
             self.spatial_organization = []
             for dim in dimensions:
@@ -58,14 +61,16 @@ class OpenEOParameter:
                     self.spatial_organization.append(tp, tp)
 
 class OpenEOProcess(multiprocessing.Process):
-    def __init__(self, request_doc):
+    def __init__(self, user, request_doc):
         if not 'process' in request_doc:
             raise Exception("missing \'process\' key returns definition")
-        
+        self.user = user
         processValues = request_doc['process']
-
+        self.submitted = str(datetime.now())
+        self.updated =  ''
         self.workflow = None
         self.id = get('id', processValues, '')
+        self.title = get('title', processValues, '')
         self.summary = get('summary', processValues, '')
         self.description = get('description', processValues, '')
         self.workflow = Workflow(get('process_graph', processValues, None), getOperation)
@@ -77,6 +82,10 @@ class OpenEOProcess(multiprocessing.Process):
         self.categories = get('categories', processValues, [])
         self.deprecated = get('deprecated', processValues, False)
         self.experimental = get('experimental', processValues, False)
+        self.plan = get('plan', processValues, 'free')
+        self.budget = get('budget', processValues, UNDEFNUMBER)
+        self.log_level = get('log_level', processValues, 'All')
+
         self.exceptions = {}
         if "exceptions" in processValues:
             for ex in processValues['exceptions'].items():
@@ -92,16 +101,30 @@ class OpenEOProcess(multiprocessing.Process):
                 self.returns['schema'] = Schema(returns['schema'])
             else:
                 raise Exception("missing \'schema\' key returns definition")
-        
-     
-   
+            
+    def setItem(self, key, dict):
+        if hasattr(self, key):
+            dict[key] = getattr(self, key)
+        return dict
 
-    def run(self, username):
+    def toDict(self, short=True):
+        dictForm = {}
+        dictForm = self.setItem('id', dictForm)
+        dictForm = self.setItem('title', dictForm)
+        dictForm = self.setItem('description', dictForm)
+        dictForm = self.setItem('deprecated', dictForm)
+        dictForm = self.setItem('experimental', dictForm)
+        dictForm = self.setItem('submitted', dictForm)
+        dictForm = self.setItem('updated', dictForm)
+        dictForm = self.setItem('plan', dictForm)
+        dictForm = self.setItem('budget', dictForm) 
+
+        return dictForm       
+
+    def run(self):
         if self.workflow != None:
-            globalProcessManager.createNewEmptyOutput(username, self.workflow.job_id)
             outputInfo = self.workflow.run(True)
 
-            if outputInfo["status"]:
-                globalProcessManager.setOutput(self.workflow.job_id, outputInfo)
+    
   
         

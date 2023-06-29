@@ -2,10 +2,11 @@ import threading
 from multiprocessing import Process
 
 def worker(openeoprocess):
-    openeoprocess[1].run(openeoprocess[0])
+    openeoprocess.run()
 
 class OutputInfo:
-    def __init__(self):
+    def __init__(self, eoprocess):
+        self.eoprocess = eoprocess
         self.progress = 0
         self.output = None
 
@@ -25,13 +26,15 @@ class ProcessManager:
         self.outputs = {}
         self.running = True
 
-    def addProcess(self, username, eoproces):
+    def addProcess(self, eoproces):
         with self.lockProcessQue:
-            self.processQueue.append((username, eoproces))
+            self.processQueue.append( eoproces)
 
-    def createNewEmptyOutput(self, username, id):
+    def createNewEmptyOutput(self, eoprocess):
         with self.lockOutput:
-            self.outputs[id] = OutputInfo()
+            self.outputs[eoprocess.workflow.job_id] = OutputInfo(eoprocess)
+            ii = id(self)  
+            print(ii)
 
     def setOutput(self, id, output):
         with self.lockOutput:
@@ -40,6 +43,19 @@ class ProcessManager:
     def addOutputProgress(self, id, progress):
         with self.lockOutput:
             self.outputs[id].progress = progress
+
+    def allJobs4User(self, user):
+        with self.lockOutput:
+            processes = []   
+            ii = id(self)
+            print(ii)         
+            for key,value in self.outputs.items():
+                if value.eoprocess.user.username == user.username:
+                    dict = value.eoprocess.toDict()
+                    processes.append(dict)
+            return processes                    
+
+
     
     def stop(self):
         self.running = False
@@ -52,7 +68,9 @@ class ProcessManager:
                     eoprocess = self.processQueue.pop()
             if eoprocess != None:
                 p = Process(target=worker, args=(eoprocess,))
+                self.createNewEmptyOutput(eoprocess)
                 p.start()
+                print(id(self))
 
 globalProcessManager  = ProcessManager()
 
