@@ -29,7 +29,7 @@ class DummyLongFunc(OpenEoOperation):
 
     def run(self, waituntilfinished):
             if self.runnable:
-                time.sleep(40.0)
+                time.sleep(600.0)
 
                 return createOutput(True, 23, DTNUMBER)
             
