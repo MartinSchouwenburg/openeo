@@ -8,7 +8,7 @@ from openeocollection import OpenEOIPCollection
 from openeoprocessdiscovery import OpenEOIPProcessDiscovery
 from openeoresult import OpenEOIPResult
 from openeofileformats import OpenEOIPFileFormats
-from openeojobs import OpenEOIPJobs
+from openeojobs import OpenEOIPJobs, OpenEOIPJobs4Job
 from openeoprocessgraphs import OpenEOProcessGraphs
 from openeoproccessgraph import OpenEOProcessGraph
 from processmanager import globalProcessManager
@@ -33,6 +33,7 @@ api.add_resource( OpenEOIPFileFormats, '/file_formats')
 api.add_resource( OpenEOIPServices, '/services')
 api.add_resource( OpenEOIPServiceTypes, '/service_types')
 api.add_resource( OpenEOIPJobs, '/jobs') 
+api.add_resource( OpenEOIPJobs4Job, '/jobs/<string:name>') 
 api.add_resource( OpenEOProcessGraphs, '/process_graphs')
 api.add_resource( OpenEOProcessGraph,'/process_graphs/<string:name>')
 
