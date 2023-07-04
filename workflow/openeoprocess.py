@@ -1,10 +1,10 @@
 from workflow.workflow import Workflow
 from globals import getOperation
-from processmanager import globalProcessManager
 from constants.constants import *
 import multiprocessing
 from datetime import datetime
 from constants.constants import *
+import uuid
 
 
 def get(key,values,  defaultValue):
@@ -13,26 +13,10 @@ def get(key,values,  defaultValue):
     return defaultValue
 
 
-class Schema:
-    def __init__(self, parm):
-        self.subtype = get('subtype', parm, '')
-        self.deprecated = get('deprecated', parm, False)
-        self.schemaUrl = get('$schema', parm, 'http://json-schema.org/draft-07/schema#')
-        self.id = get('$id', parm, 'unknown')
-        self.type = get('type', parm, 'unknown')
-        self.regex = get('pattern', parm, '')
-        self.enum = get('enum', parm, [])
-        self.minimumum = get('minimum', parm, UNDEFNUMBER )
-        self.maximum = get('maximum', parm, UNDEFNUMBER )
-        self.minItems = get('minItems', parm, UNDEFNUMBER )
-        self.maxItems = get('maxItems', parm, UNDEFNUMBER )  
-        self.items = get('items', parm, [])    
-
 class OpenEOParameter:
     def __init__(self, parm):
-        schema = parm['schema']
-        subt = schema['subtype']
-        self.schema = Schema(schema)
+        self.schema = parm['schema']
+        subt = self.schema['subtype']
         self.name = get('name', parm, '')
         self.description = get('description', parm, '')
         self.optional = get('optional', parm, False)
@@ -42,7 +26,7 @@ class OpenEOParameter:
 
         if subt == 'process-graph': 
             ret = parm['return']
-            self.returnValue = (ret['description'], Schema(ret['schema']))
+            self.returnValue = (ret['description'], ret['schema'])
             self.parameters = [] 
             parms = parm['parameters']
             for parm in parms:
@@ -60,6 +44,20 @@ class OpenEOParameter:
                 if tp in ['bands', 'temporal', 'other']:
                     self.spatial_organization.append(tp, tp)
 
+    def toDict(self):
+            parmDict = {}
+            parmDict = self.schema
+            parmDict['name'] = self.name
+            parmDict['description'] = self.description
+            parmDict['optional'] = self.optional
+            parmDict['deprecated'] = self.deprecated
+            parmDict['experimental'] = self.experimental
+            if self.default != None:
+                parmDict['default']  = self.default
+            return parmDict                
+
+
+
 class OpenEOProcess(multiprocessing.Process):
     def __init__(self, user, request_doc):
         if not 'process' in request_doc:
@@ -73,9 +71,9 @@ class OpenEOProcess(multiprocessing.Process):
         self.title = get('title', processValues, '')
         self.summary = get('summary', processValues, '')
         self.description = get('description', processValues, '')
+        self.job_id = uuid.uuid4() 
         self.workflow = Workflow(get('process_graph', processValues, None), getOperation)
         self.parameters = []
-        dd = 'parameters' in processValues
         if 'parameters' in processValues:
             for parameter in processValues['parameters']:
                 self.parameters.append(OpenEOParameter(parameter))
@@ -98,9 +96,17 @@ class OpenEOProcess(multiprocessing.Process):
             self.returns['description'] = get('description', returns, '')
             
             if 'schema' in returns:
-                self.returns['schema'] = Schema(returns['schema'])
+                self.returns['schema'] = returns['schema']
             else:
                 raise Exception("missing \'schema\' key returns definition")
+            
+        self.examples = []
+        if 'examples' in processValues:
+            self.examples = get('examples', processValues, [])
+
+        self.links = []
+        if 'links' in processValues:
+            self.links = get('links', processValues, [])            
             
     def setItem(self, key, dict):
         if hasattr(self, key):
@@ -109,21 +115,40 @@ class OpenEOProcess(multiprocessing.Process):
 
     def toDict(self, short=True):
         dictForm = {}
-        dictForm = self.setItem('id', dictForm)
+        dictForm['id'] = str(self.job_id)
         dictForm = self.setItem('title', dictForm)
         dictForm = self.setItem('description', dictForm)
         dictForm = self.setItem('deprecated', dictForm)
         dictForm = self.setItem('experimental', dictForm)
         dictForm = self.setItem('submitted', dictForm)
-        dictForm = self.setItem('updated', dictForm)
         dictForm = self.setItem('plan', dictForm)
-        dictForm = self.setItem('budget', dictForm) 
+        dictForm = self.setItem('budget', dictForm)
+        if short == False:
+            processDict = {}
+            processDict = self.setItem('summary', processDict) 
+            processDict = self.setItem('id', processDict) 
+            processDict = self.setItem('desciption', processDict)
+            parms = []
+            for parm in self.parameters:
+                parms.append(parm.toDict())
+            if len(parms) > 0:
+                processDict["parameters"] = parms
+
+            processDict['returns'] = self.returns
+            processDict['categories'] = self.categories
+            if len(self.examples) > 0:
+                processDict['examples'] = self.examples 
+            if len(self.links) > 0:
+                processDict['links'] = self.examples                 
+            processDict['process_graph'] = self.workflow.sourceGraph
+            dictForm['process'] = processDict
+            dictForm['log_level'] = self.log_level
 
         return dictForm       
 
-    def run(self):
+    def run(self, queue):
         if self.workflow != None:
-            outputInfo = self.workflow.run(True)
+            outputInfo = self.workflow.run(self.job_id, queue)
 
     
   
