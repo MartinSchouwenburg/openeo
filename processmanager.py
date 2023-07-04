@@ -1,13 +1,15 @@
 import threading
-from multiprocessing import Process
+from multiprocessing import Process, Queue
+from datetime import datetime
 
-def worker(openeoprocess):
-    openeoprocess.run()
+def worker(openeoprocess, outputQueue):
+    openeoprocess.run(outputQueue)
 
 class OutputInfo:
     def __init__(self, eoprocess):
         self.eoprocess = eoprocess
         self.progress = 0
+        self.last_updated = str(datetime.now())
         self.output = None
 
     def isFinished(self):
@@ -24,7 +26,9 @@ class ProcessManager:
         self.lockOutput = threading.Lock()
         self.processQueue  = []
         self.outputs = {}
+        self.outputQueue = Queue()
         self.running = True
+
 
     def addProcess(self, eoproces):
         with self.lockProcessQue:
@@ -32,9 +36,8 @@ class ProcessManager:
 
     def createNewEmptyOutput(self, eoprocess):
         with self.lockOutput:
-            self.outputs[eoprocess.workflow.job_id] = OutputInfo(eoprocess)
-            ii = id(self)  
-            print(ii)
+            self.outputs[eoprocess.job_id] = OutputInfo(eoprocess)
+
 
     def setOutput(self, id, output):
         with self.lockOutput:
@@ -44,15 +47,16 @@ class ProcessManager:
         with self.lockOutput:
             self.outputs[id].progress = progress
 
-    def allJobs4User(self, user):
+    def allJobs4User(self, user, name):
         with self.lockOutput:
             processes = []   
-            ii = id(self)
-            print(ii)         
             for key,value in self.outputs.items():
                 if value.eoprocess.user.username == user.username:
-                    dict = value.eoprocess.toDict()
-                    processes.append(dict)
+                    if name == None or ( name == str(value.eoprocess.job_id)):
+                        dict = value.eoprocess.toDict( name == None)
+                        dict['progress'] = value.progress
+                        dict['updated'] = value.last_updated
+                        processes.append(dict)
             return processes                    
 
 
@@ -67,10 +71,16 @@ class ProcessManager:
                 if not len(self.processQueue) == 0:
                     eoprocess = self.processQueue.pop()
             if eoprocess != None:
-                p = Process(target=worker, args=(eoprocess,))
+                p = Process(target=worker, args=(eoprocess,self.outputQueue,))
                 self.createNewEmptyOutput(eoprocess)
                 p.start()
-                print(id(self))
+            if self.outputQueue.qsize() > 0:
+                item = self.outputQueue.get()
+                job_id = item['job_id']
+                if job_id in self.outputs:
+                    self.outputs[job_id].progress = item['progress']
+                    self.outputs[job_id].last_update = str(datetime.now())
+
 
 globalProcessManager  = ProcessManager()
 
