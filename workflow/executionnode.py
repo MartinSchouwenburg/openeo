@@ -8,40 +8,39 @@ import traceback
 class ExecutionNode :
 
 
-    def __init__(self, node, workflow, getOperation):
+    def __init__(self, node, workflow):
         self.workflowNode = node
         self.workflow = workflow
         self.outputInfo = None
-        self.getOperation = getOperation
 
-    def run(self):
+    def run(self, job_id, queue):
         ok = False        
         if self.workflowNode != None:
  
             if self.workflowNode[1].nodeType == WorkflowNode.CONDITION:
-                ok = self.executeTest()
+                ok = self.executeTest(job_id, queue)
             elif self.workflowNode[1].nodeType == WorkflowNode.OPERATION:
-                ok = self.executeOperation()
+                ok = self.executeOperation(job_id, queue)
         return ok
         
-    def executeTest():
+    def executeTest(self, job_id, queue):
         return True
     
-    def executeOperation(self):
+    def executeOperation(self, job_id, queue):
         wfNode = self.workflowNode[1]
         noOfArguments = len(wfNode.arguments)
         for arg in wfNode.arguments.items():
             if ( wfNode.argumentValues[arg[0]] == None): # not calculated yet
                 fromNodeId = arg[1]['from_node']
                 backNode = self.workflow.id2Node(fromNodeId)
-                exNode = ExecutionNode(backNode,self.workflow, self.getOperation)
+                exNode = ExecutionNode(backNode,self.workflow)
                 if exNode.run():
                      self.workflowNode[1].argumentValues[arg[0]] = exNode.outputInfo["value"]
                 else:
                     return False                     
 
         processNode = self.workflowNode[1]
-        processObj = self.getOperation(processNode.process_id)
+        processObj = self.workflow.getOperation(processNode.process_id)
         if  processObj != None:
             arguments = processNode.argumentValues
             executeObj =  copy.deepcopy(processObj)
@@ -51,7 +50,7 @@ class ExecutionNode :
                 return False
 
             try:
-                self.outputInfo = executeObj.run(waituntilfinished=True)
+                self.outputInfo = executeObj.run(processOutput=queue, job_id=job_id)
                     
             except Exception:
                     e_type, e_value, e_tb = sys.exc_info()
