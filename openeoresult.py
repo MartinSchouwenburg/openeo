@@ -17,7 +17,7 @@ class OpenEOIPResult(Resource):
 
                 if outputInfo["status"]:
                     if outputInfo["datatype"] != DTRASTER:
-                        res = { "job_id" : process.workflow.job_id,
+                        res = { "job_id" : process.job_id,
                                 "message" : "Process completed succesfully",
                                 "data" : {
                                     "type" : self.makeType(outputInfo["datatype"]),
@@ -35,7 +35,7 @@ class OpenEOIPResult(Resource):
                                         direct_passthrough=True)
                     
                 
-                return make_response(jsonify({"job_id" : process.workflow.job_id, "job_info" :outputInfo["value"]}),404)
+                return make_response(jsonify({"job_id" : process.job_id, "job_info" :outputInfo["value"]}),404)
         except Exception as ex:
             return make_response(jsonify({"job_id" : 0, "job_info" :str(ex)}),404)
         
