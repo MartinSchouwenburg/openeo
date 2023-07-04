@@ -1,6 +1,6 @@
 from flask_restful import Resource
 from flask import make_response, jsonify, request
-
+    
 from globals import globalsSingleton
 
 class OpenEOIPCapabilities(Resource):

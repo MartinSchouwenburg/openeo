@@ -11,6 +11,7 @@ class OutputInfo:
         self.progress = 0
         self.last_updated = str(datetime.now())
         self.output = None
+        self.status = 'queued'
 
     def isFinished(self):
         return self.progress == 1
@@ -56,6 +57,7 @@ class ProcessManager:
                         dict = value.eoprocess.toDict( name == None)
                         dict['progress'] = value.progress
                         dict['updated'] = value.last_updated
+                        dict['status'] = value.status
                         processes.append(dict)
             return processes                    
 
@@ -79,7 +81,8 @@ class ProcessManager:
                 job_id = item['job_id']
                 if job_id in self.outputs:
                     self.outputs[job_id].progress = item['progress']
-                    self.outputs[job_id].last_update = str(datetime.now())
+                    self.outputs[job_id].last_updated = str(datetime.now())
+                    self.outputs[job_id].status = item['status']
 
 
 globalProcessManager  = ProcessManager()

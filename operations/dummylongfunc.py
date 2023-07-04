@@ -34,13 +34,15 @@ class DummyLongFunc(OpenEoOperation):
                     time.sleep(1)
                     currenttime = time.time()
                     if currenttime - lasttime > 5:
-                        processOutput.put({'progress' : i, 'job_id' : job_id})     
+                        f = float(i/self.a)
+                        p = int(100 * f)
+                        processOutput.put({'progress' : p, 'job_id' : job_id, 'status' : 'running'})     
                         lasttime = currenttime
                          
-
-                return createOutput(True, 23, DTNUMBER)
+                processOutput.put({'progress' : 100, 'job_id' : job_id, 'status' : 'finished'})   
+                return createOutput('finished', 23, DTNUMBER)
             
-            return createOutput(False, "operation no runnable", DTERROR)
+            return createOutput('error', "operation not runnable", DTERROR)
 
 def registerOperation():
      return DummyLongFunc()

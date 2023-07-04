@@ -65,6 +65,7 @@ class OpenEOProcess(multiprocessing.Process):
         self.user = user
         processValues = request_doc['process']
         self.submitted = str(datetime.now())
+        self.status = 'created'
         self.updated =  ''
         self.workflow = None
         self.id = get('id', processValues, '')

@@ -49,12 +49,16 @@ class MultiplyOperation(OpenEoOperation):
 
     def run(self, job_id, processOutput):
         if self.runnable:
-            response = {}
+
+            processOutput.put({'progress' : 0, 'job_id' : job_id, 'status' : 'running'})
+
             c = self.a * self.b
-            returnInfo = {"status" : True, "value" : c, "datatype" : DTNUMBER}
-            return createOutput(True, c, DTNUMBER)
+
+            processOutput.put({'progress' : 100, 'job_id' : job_id, 'status' : 'finished'}) 
+
+            return createOutput('finished', c, DTNUMBER)
         
-        return createOutput(False, "operation no runnable", DTERROR)
+        return createOutput('error', "operation no runnable", DTERROR)
         
 def registerOperation():
      return MultiplyOperation()
