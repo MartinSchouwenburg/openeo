@@ -1,16 +1,15 @@
 from enum import Enum
-import uuid
 from workflow.worklfownode import WorkflowNode
 from workflow.executionnode import ExecutionNode
 from openeooperation import *
 from constants.constants import *
+
 
 class Workflow(OpenEoOperation):
 
     def __init__(self, process_graph, getOperation):
         self.workflowGraph = {}
         self.outputNodes = []
-        self.job_id = uuid.uuid4() 
         self.sourceGraph = process_graph
         self.getOperation = getOperation
         for processKey,processValues in process_graph.items():
@@ -22,11 +21,11 @@ class Workflow(OpenEoOperation):
     def prepare(self, arguments):
         return ""
     
-    def run(self,waituntilfinished ):
+    def run(self,job_id, queue ):
         try:
             for node in self.outputNodes:
-                exNode = ExecutionNode(node,self, self.getOperation)
-                exNode.run()
+                exNode = ExecutionNode(node,self)
+                exNode.run(job_id, queue)
                 return exNode.outputInfo
         except:
             return createOutput(False, "Unknown exception", DTERROR)
