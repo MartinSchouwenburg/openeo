@@ -47,7 +47,7 @@ class MultiplyOperation(OpenEoOperation):
         return ""
               
 
-    def run(self, waituntilfinished):
+    def run(self, job_id, processOutput):
         if self.runnable:
             response = {}
             c = self.a * self.b

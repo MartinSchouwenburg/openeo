@@ -27,9 +27,16 @@ class DummyLongFunc(OpenEoOperation):
 
             return ""
 
-    def run(self, waituntilfinished):
+    def run(self, job_id, processOutput):
             if self.runnable:
-                time.sleep(600.0)
+                lasttime = time.time()
+                for i in range(self.a):
+                    time.sleep(1)
+                    currenttime = time.time()
+                    if currenttime - lasttime > 5:
+                        processOutput.put({'progress' : i, 'job_id' : job_id})     
+                        lasttime = currenttime
+                         
 
                 return createOutput(True, 23, DTNUMBER)
             
