@@ -1,4 +1,3 @@
-from enum import Enum
 from workflow.worklfownode import WorkflowNode
 from workflow.executionnode import ExecutionNode
 from openeooperation import *
