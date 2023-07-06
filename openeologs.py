@@ -5,7 +5,11 @@ from userinfo import UserInfo
 
 class OpenEOIPLogs(Resource):
     def get(self, job_id):
-        user = UserInfo(request)
-        logs = globalProcessManager.outputs[job_id].logs
-        return make_response(jsonify(logs),200)
+        try:
+            user = UserInfo(request)
+            logs = globalProcessManager.outputs[job_id].logs
+            return make_response(jsonify(logs),200)
+        except Exception as ex:
+            return make_response(jsonify({"job_id" : job_id, "job_info" :str(ex)}),404)  
+
         
