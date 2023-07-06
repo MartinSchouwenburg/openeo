@@ -12,6 +12,7 @@ class OutputInfo:
         self.last_updated = str(datetime.now())
         self.output = None
         self.status = 'queued'
+        self.logs = []
 
     def isFinished(self):
         return self.progress == 1
@@ -37,31 +38,40 @@ class ProcessManager:
 
     def createNewEmptyOutput(self, eoprocess):
         with self.lockOutput:
-            self.outputs[eoprocess.job_id] = OutputInfo(eoprocess)
+            self.outputs[str(eoprocess.job_id)] = OutputInfo(eoprocess)
 
+    def addLog4job(self, job_id, logCount, level, message, data=None, usage=None, links=None):
+            self.outputQueue.put({'type' : 'loggingevent', 'job_id': job_id, 'id' : logCount, 'level' : level, 'message' : message, 'time' : str(datetime.now())})
 
     def setOutput(self, id, output):
         with self.lockOutput:
-            self.outputs[id].output = output
+            self.outputs[str(id)].output = output
 
     def addOutputProgress(self, id, progress):
         with self.lockOutput:
-            self.outputs[id].progress = progress
+            self.outputs[str(id)].progress = progress
 
-    def allJobs4User(self, user, name):
+    def allJobs4User(self, user, processid):
         with self.lockOutput:
             processes = []   
             for key,value in self.outputs.items():
                 if value.eoprocess.user.username == user.username:
-                    if name == None or ( name == str(value.eoprocess.job_id)):
-                        dict = value.eoprocess.toDict( name == None)
+                    if processid == None or ( processid == str(value.eoprocess.job_id)):
+                        dict = value.eoprocess.toDict( processid == None)
                         dict['progress'] = value.progress
                         dict['updated'] = value.last_updated
                         dict['status'] = value.status
                         processes.append(dict)
             return processes                    
 
-
+    def alllogs4job(self, user, jobid):
+        with self.lockOutput:
+            for key,value in self.outputs.items():
+                if value.eoprocess.user.username == user.username:
+                    if  jobid == str(value.eoprocess.job_id):
+                        return value.logs
+        return []                    
+    
     
     def stop(self):
         self.running = False
@@ -80,9 +90,15 @@ class ProcessManager:
                 item = self.outputQueue.get()
                 job_id = item['job_id']
                 if job_id in self.outputs:
-                    self.outputs[job_id].progress = item['progress']
-                    self.outputs[job_id].last_updated = str(datetime.now())
-                    self.outputs[job_id].status = item['status']
+                    type = item['type']
+                    if type == 'progressevent':
+                        self.outputs[job_id].progress = item['progress']
+                        self.outputs[job_id].last_updated = str(datetime.now())
+                        self.outputs[job_id].status = item['status']
+                    if type == 'logginevent':
+                        del item['type']
+                        self.outputs[job_id].logs.append(item)
+
 
 
 globalProcessManager  = ProcessManager()
