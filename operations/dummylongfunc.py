@@ -1,7 +1,10 @@
 from openeooperation import *
 from operations.operationconstants import *
 from constants.constants import *
+from processmanager import globalProcessManager
 import time
+import random
+from datetime import datetime
 
 
 class DummyLongFunc(OpenEoOperation):
@@ -29,17 +32,25 @@ class DummyLongFunc(OpenEoOperation):
 
     def run(self, job_id, processOutput):
             if self.runnable:
+                logCount = 0
                 lasttime = time.time()
                 for i in range(self.a):
                     time.sleep(1)
                     currenttime = time.time()
+                    r = random.random() * 100
+                    if r > 95.0:
+                         globalProcessManager.addLog4job(job_id, logCount, 'warning', 'dummy message ' + str(r))
+                         processOutput.put({'type' : 'logginevent', 'job_id': job_id, 'id' : logCount, 'level' : 'info', 'message' : 'dummy ' + str(r), 'time' : str(datetime.now())})
+                         logCount = logCount + 1
+
                     if currenttime - lasttime > 5:
                         f = float(i/self.a)
                         p = int(100 * f)
-                        processOutput.put({'progress' : p, 'job_id' : job_id, 'status' : 'running'})     
+                        processOutput.put({'type': 'progressevent','progress' : p, 'job_id' : job_id, 'status' : 'running'})     
                         lasttime = currenttime
+                                            
                          
-                processOutput.put({'progress' : 100, 'job_id' : job_id, 'status' : 'finished'})   
+                processOutput.put({'type': 'progressevent', 'progress' : 100, 'job_id' : job_id, 'status' : 'finished'})   
                 return createOutput('finished', 23, DTNUMBER)
             
             return createOutput('error', "operation not runnable", DTERROR)
