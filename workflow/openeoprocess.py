@@ -149,7 +149,7 @@ class OpenEOProcess(multiprocessing.Process):
 
     def run(self, queue):
         if self.workflow != None:
-            outputInfo = self.workflow.run(self.job_id, queue)
+            outputInfo = self.workflow.run(str(self.job_id), queue)
 
     
   
