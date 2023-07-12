@@ -1,7 +1,25 @@
-import os
+import threading
 import json
+from constants.constants import *
+import datetime
+
 
 operations1 = {}
+
+def message_handler(operation, processInput):
+
+    while True:
+        if processInput.poll(timeout=1):
+            if processInput.closed == False:
+                data = processInput.recv()
+                message = json.loads(data)
+                if 'status' in message:
+                    status = message['status']
+                    if status == 'stop':
+                        operation.stopped = True
+                        return ## end thread
+
+
 
 class OpenEoOperation:
     name = ''
@@ -13,7 +31,12 @@ class OpenEoOperation:
     exceptions = {}
     examples = []
     links = []
-    runnable = False    
+    runnable = False 
+    stopped = False
+
+    def startListener(self, processInput):
+        message_thread = threading.Thread(target=message_handler,args=(self, processInput,) )
+        message_thread.start()
 
     def toDict(self):
         iparameters = []
@@ -43,7 +66,13 @@ class OpenEoOperation:
         self.links.append({'ref' : ref, 'href' : href, 'title' : title})
 
 def createOutput(status, value, datatype, format='')        :
-    return {"status" : status, "value" : value, "datatype" : datatype, 'format' : format}   
+    return {"status" : status, "value" : value, "datatype" : datatype, 'format' : format}  
+
+def messageProgress(processOutput, job_id, progress) :
+    processOutput.put({'type': 'progressevent','progress' : progress, 'job_id' : job_id, 'status' : STATUSRUNNING}) 
+
+
+
 
 
 
