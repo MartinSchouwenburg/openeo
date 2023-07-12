@@ -8,7 +8,7 @@ from openeocollection import OpenEOIPCollection
 from openeoprocessdiscovery import OpenEOIPProcessDiscovery
 from openeoresult import OpenEOIPResult
 from openeofileformats import OpenEOIPFileFormats
-from openeojobs import OpenEOIPJobs, OpenEOIPJobs4Job
+from openeojobs import OpenEOIPJobs, OpenEOIJobById,OpenEOIJobById2, OpenEOIJobByIdEstimate
 from openeoprocessgraphs import OpenEOProcessGraphs
 from openeoproccessgraph import OpenEOProcessGraph
 from openeologs import OpenEOIPLogs
@@ -34,10 +34,13 @@ api.add_resource( OpenEOIPFileFormats, '/file_formats')
 api.add_resource( OpenEOIPServices, '/services')
 api.add_resource( OpenEOIPServiceTypes, '/service_types')
 api.add_resource( OpenEOIPJobs, '/jobs') 
-api.add_resource( OpenEOIPJobs4Job, '/jobs/<string:name>') 
+api.add_resource( OpenEOIJobById, '/jobs/<string:job_id>') 
+api.add_resource( OpenEOIJobById2, '/jobs/<string:job_id>/results') 
+api.add_resource( OpenEOIJobByIdEstimate, '/jobs/<string:job_id>/estimate') 
 api.add_resource( OpenEOProcessGraphs, '/process_graphs')
 api.add_resource( OpenEOProcessGraph,'/process_graphs/<string:name>')
 api.add_resource( OpenEOIPLogs,'/jobs/<string:job_id>/logs')
+##api.add_resource( OpenEODelete,'/jobs/<string:job_id>')
 
 
 def startProcesses():
