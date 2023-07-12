@@ -5,6 +5,8 @@ import multiprocessing
 from datetime import datetime
 from constants.constants import *
 import uuid
+from multiprocessing import Pipe
+import json
 
 
 def get(key,values,  defaultValue):
@@ -107,12 +109,17 @@ class OpenEOProcess(multiprocessing.Process):
 
         self.links = []
         if 'links' in processValues:
-            self.links = get('links', processValues, [])            
+            self.links = get('links', processValues, [])   
+
+        self.sendTo, self.fromServer = Pipe() #note: these pipes are only used for ouput to the child process
             
     def setItem(self, key, dict):
         if hasattr(self, key):
             dict[key] = getattr(self, key)
         return dict
+
+    def estimate(self, user):
+        return self.workflow.estimate()
 
     def toDict(self, short=True):
         dictForm = {}
@@ -145,11 +152,26 @@ class OpenEOProcess(multiprocessing.Process):
             dictForm['process'] = processDict
             dictForm['log_level'] = self.log_level
 
-        return dictForm       
+        return dictForm  
 
-    def run(self, queue):
+    def cleanup():
+        ##TODO : remove data
+        a = 1
+
+    def stop(self):
+        data = {"job_id": str(self.job_id), "status": "stop"}
+        message = json.dumps(data)
+        self.sendTo.send(message)
+
+    def run(self, toServer):
         if self.workflow != None:
-            outputInfo = self.workflow.run(str(self.job_id), queue)
+            outputinfo = self.workflow.run(str(self.job_id), toServer, self.fromServer)
+            self.sendTo.close()
+            self.fromServer.close()
+            self.status = outputinfo['status']            
+            if outputinfo['status'] == STATUSSTOPPED:
+                self.cleanup()
+                
 
     
   
