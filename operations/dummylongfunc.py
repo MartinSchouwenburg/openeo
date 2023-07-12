@@ -4,7 +4,7 @@ from constants.constants import *
 from processmanager import globalProcessManager
 import time
 import random
-from datetime import datetime
+import datetime
 
 
 class DummyLongFunc(OpenEoOperation):
@@ -23,6 +23,12 @@ class DummyLongFunc(OpenEoOperation):
 
         self.a = UNDEFNUMBER
 
+    def estimate(self, estimationValues, argumentValues):
+        outputInfo = { 'outputdimensions' : [3,3], 'outputtype' : DTRASTER, 'outputsubtype' : DTNUMBER}
+        outputcost = { 'cost' : 20, 'duration' : 100, 'size' : 34, 'expires' : datetime.datetime(2025,1,1)}
+
+        return (True, outputInfo, outputcost)
+         
     def prepare(self, arguments):
             self.runnable = True
 
@@ -30,10 +36,12 @@ class DummyLongFunc(OpenEoOperation):
 
             return ""
 
-    def run(self, job_id, processOutput):
+    def run(self, job_id, processOutput, processInput):
             if self.runnable:
                 logCount = 0
                 lasttime = time.time()
+                self.startListener(processInput)
+
                 for i in range(self.a):
                     time.sleep(1)
                     currenttime = time.time()
@@ -44,14 +52,21 @@ class DummyLongFunc(OpenEoOperation):
                          logCount = logCount + 1
 
                     if currenttime - lasttime > 5:
-                        f = float(i/self.a)
-                        p = int(100 * f)
-                        processOutput.put({'type': 'progressevent','progress' : p, 'job_id' : job_id, 'status' : 'running'})     
+                        p = int(100 * float(i/self.a))
+                        messageProgress(processOutput, job_id, p)
+                            
                         lasttime = currenttime
+
+                    if self.stopped == True:
+                         break 
                                             
-                         
-                processOutput.put({'type': 'progressevent', 'progress' : 100, 'job_id' : job_id, 'status' : 'finished'})   
-                return createOutput('finished', 23, DTNUMBER)
+                status = STATUSFINISHED
+                if self.stopped == True:
+                    status = STATUSSTOPPED
+
+                processOutput.put({'type': 'progressevent', 'progress' : 100, 'job_id' : job_id, 'status' : status}) 
+                  
+                return createOutput(status, 23, DTNUMBER)
             
             return createOutput('error', "operation not runnable", DTERROR)
 

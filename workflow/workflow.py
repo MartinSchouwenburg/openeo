@@ -1,5 +1,6 @@
 from workflow.worklfownode import WorkflowNode
 from workflow.executionnode import ExecutionNode
+from workflow.estimationnode import EstimationNode
 from openeooperation import *
 from constants.constants import *
 
@@ -11,6 +12,7 @@ class Workflow(OpenEoOperation):
         self.outputNodes = []
         self.sourceGraph = process_graph
         self.getOperation = getOperation
+        self.startNode = None
         for processKey,processValues in process_graph.items():
             grNode = WorkflowNode(processValues)
             self.workflowGraph[processKey] = grNode
@@ -20,14 +22,27 @@ class Workflow(OpenEoOperation):
     def prepare(self, arguments):
         return ""
     
-    def run(self,job_id, queue ):
+    def estimate(self):
         try:
             for node in self.outputNodes:
-                exNode = ExecutionNode(node,self)
-                exNode.run(job_id, queue)
-                return exNode.outputInfo
-        except:
-            return createOutput(False, "Unknown exception", DTERROR)
+                self.startNode = EstimationNode(node,self)
+                return self.startNode.estimate()
+
+        except Exception as ex:
+            return createOutput(False, str(ex), DTERROR)
+
+    def run(self,job_id, toServer, fromServer ):
+        try:
+            for node in self.outputNodes:
+                self.startNode = ExecutionNode(node,self)
+                self.startNode.run(job_id, toServer, fromServer)
+                return self.startNode.outputInfo
+        except Exception as ex:
+            return createOutput(False, str(ex), DTERROR)
+        
+    def stop(self):
+        if self.startNode != None:
+            self.startNode.stop()
 
     def processGraph(self):
         return self.sourceGraph
