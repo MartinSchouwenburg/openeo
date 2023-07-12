@@ -7,4 +7,10 @@ class UserInfo:
         self.username = 'undefined'
         if sessioninfo.authorization != None:
             self.username = sessioninfo.authorization['username']
+    
+    def __eq__(self, other):
+        if not isinstance(other, UserInfo):
+            return NotImplemented
+        
+        return self.username == other.username
 
