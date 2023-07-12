@@ -13,22 +13,25 @@ class ExecutionNode :
         self.workflow = workflow
         self.outputInfo = None
 
-    def run(self, job_id, queue):
+   
+    def run(self, job_id, queue, fromServer):
         ok = False        
         if self.workflowNode != None:
  
             if self.workflowNode[1].nodeType == WorkflowNode.CONDITION:
-                ok = self.executeTest(job_id, queue)
+                ok = self.executeTest(job_id, queue, fromServer)
             elif self.workflowNode[1].nodeType == WorkflowNode.OPERATION:
-                ok = self.executeOperation(job_id, queue)
+                ok = self.executeOperation(job_id, queue, fromServer)
         return ok
         
     def executeTest(self, job_id, queue):
         return True
     
-    def executeOperation(self, job_id, queue):
+    def stop():
+        return 0
+    
+    def executeOperation(self, job_id, toServer, fromServer):
         wfNode = self.workflowNode[1]
-        noOfArguments = len(wfNode.arguments)
         for arg in wfNode.arguments.items():
             if ( wfNode.argumentValues[arg[0]] == None): # not calculated yet
                 fromNodeId = arg[1]['from_node']
@@ -50,7 +53,7 @@ class ExecutionNode :
                 return False
 
             try:
-                self.outputInfo = executeObj.run(processOutput=queue, job_id=job_id)
+                self.outputInfo = executeObj.run(processOutput=toServer, processInput = fromServer, job_id=job_id)
                     
             except Exception:
                     e_type, e_value, e_tb = sys.exc_info()
