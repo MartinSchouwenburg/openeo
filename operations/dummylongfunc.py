@@ -5,6 +5,7 @@ from processmanager import globalProcessManager
 import time
 import random
 import datetime
+from datetime import datetime
 
 
 class DummyLongFunc(OpenEoOperation):
@@ -47,9 +48,10 @@ class DummyLongFunc(OpenEoOperation):
                     currenttime = time.time()
                     r = random.random() * 100
                     if r > 95.0:
-                         globalProcessManager.addLog4job(job_id, logCount, 'warning', 'dummy message ' + str(r))
-                         processOutput.put({'type' : 'logginevent', 'job_id': job_id, 'id' : logCount, 'level' : 'info', 'message' : 'dummy ' + str(r), 'time' : str(datetime.now())})
-                         logCount = logCount + 1
+                        globalProcessManager.addLog4job(job_id, logCount, 'warning', 'dummy message ' + str(r))
+                        timenow = str(datetime.now())
+                        processOutput.put({'type' : 'logginevent', 'job_id': job_id, 'id' : logCount, 'level' : 'info', 'message' : 'dummy ' + str(r), 'timestamp' : timenow})
+                        logCount = logCount + 1
 
                     if currenttime - lasttime > 5:
                         p = int(100 * float(i/self.a))
@@ -58,7 +60,8 @@ class DummyLongFunc(OpenEoOperation):
                         lasttime = currenttime
 
                     if self.stopped == True:
-                         break 
+                        break 
+                        
                                             
                 status = STATUSFINISHED
                 if self.stopped == True:
