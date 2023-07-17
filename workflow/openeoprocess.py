@@ -61,20 +61,24 @@ class OpenEOParameter:
 
 
 class OpenEOProcess(multiprocessing.Process):
-    def __init__(self, user, request_doc):
+    def __init__(self, user, request_doc, id):
         if not 'process' in request_doc:
             raise Exception("missing \'process\' key returns definition")
         self.user = user
         processValues = request_doc['process']
         self.submitted = str(datetime.now())
-        self.status = 'created'
+        self.status = STATUSCREATED
         self.updated =  ''
         self.workflow = None
         self.id = get('id', processValues, '')
         self.title = get('title', processValues, '')
         self.summary = get('summary', processValues, '')
         self.description = get('description', processValues, '')
-        self.job_id = uuid.uuid4() 
+        if id == 0:
+            self.job_id = str(uuid.uuid4())
+        else:
+            self.jon_id = id
+
         self.workflow = Workflow(get('process_graph', processValues, None), getOperation)
         self.parameters = []
         if 'parameters' in processValues:
@@ -154,7 +158,7 @@ class OpenEOProcess(multiprocessing.Process):
 
         return dictForm  
 
-    def cleanup():
+    def cleanup(self):
         ##TODO : remove data
         a = 1
 

@@ -1,7 +1,6 @@
 import threading
 import json
 from constants.constants import *
-import datetime
 
 
 operations1 = {}
@@ -9,15 +8,18 @@ operations1 = {}
 def message_handler(operation, processInput):
 
     while True:
-        if processInput.poll(timeout=1):
-            if processInput.closed == False:
-                data = processInput.recv()
-                message = json.loads(data)
-                if 'status' in message:
-                    status = message['status']
-                    if status == 'stop':
-                        operation.stopped = True
-                        return ## end thread
+        if processInput.closed == False:        
+            if processInput.poll(timeout=1):
+                    try:
+                        data = processInput.recv()
+                        message = json.loads(data)
+                        if 'status' in message:
+                            status = message['status']
+                            if status == 'stop':
+                                operation.stopped = True
+                                return ## end thread
+                    except Exception: 
+                        return                           
 
 
 

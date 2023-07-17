@@ -3,6 +3,30 @@ from multiprocessing import Process, Queue
 from datetime import datetime
 from constants.constants import *
 
+def linkSection(begin, end):
+        return {
+                "href" :  begin + "/" + end,
+                "rel" : 'self',
+                "type" : "application/json"
+            }
+def makeBaseResponseDict(job_id, status, code, baseurl = None, message=None) :
+    if status == STATUSUNKNOWN:
+        process = globalProcessManager.getProcess(None, job_id)
+        if  process != None:
+            status = process.status
+
+    res = { "job_id" : job_id,
+            "code" : code,
+            "status" : status,
+            "submitted" : str(datetime.now()),
+        }
+    if baseurl != None:
+        res['links'] = linkSection(baseurl, job_id)
+        
+    if message != None:
+        res['message'] = message
+    return res
+
 def worker(openeoprocess, outputQueue):
     openeoprocess.run(outputQueue)
 
@@ -89,6 +113,18 @@ class ProcessManager:
             return (eoprocess.estimate(user), 200)
         return ({'id' : job_id, 'code' : 'job not found'}, 400)
 
+    def removedCreatedJob(self, job_id):
+        for i in range(len(self.processQueue)):
+            if str(self.processQueue[i].job_id) == job_id:
+                if self.processQueue[i].status == STATUSCREATED:
+                    self.processQueue.pop(i)
+                    return STATUSCREATED
+                else:
+                    return STATUSQUEUED
+        return STATUSUNKNOWN                
+                
+
+
     def getProcess(self, user, job_id):
         for i in range(len(self.processQueue)):
             if str(self.processQueue[i].job_id) == job_id:
@@ -99,25 +135,40 @@ class ProcessManager:
         return None            
 
 
-    def allJobs4User(self, user, processid):
+    def allJobs4User(self, user, processid, baseurl):
         with self.lockOutput:
             processes = []   
             for key,value in self.outputs.items():
                 if value.eoprocess.user == user:
                     if processid == None or ( processid == str(value.eoprocess.job_id)):
-                        dict = value.eoprocess.toDict( processid == None)
+                        dict = {} ##value.eoprocess.toDict( processid == None)
                         dict['progress'] = value.progress
                         dict['updated'] = value.last_updated
                         dict['status'] = value.status
+                        dict['job_id'] = value.eoprocess.job_id
+                        dict['submitted'] = value.eoprocess.submitted
+                        dict["links"]  = {
+                            "href" :  baseurl + "/" + value.eoprocess.job_id,
+                            "rel" : 'self',
+                            "type" : "application/json"
+                            }
                         processes.append(dict)
             return processes                    
 
     def alllogs4job(self, user, jobid):
         with self.lockOutput:
+
             for key,value in self.outputs.items():
                 if value.eoprocess.user == user:
                     if  jobid == str(value.eoprocess.job_id):
-                        return value.logs
+                        logs = []
+                        for log in value.logs:
+                            logEntry = {}
+                            logEntry['timestamp'] = log.timestamp
+                            logEntry['message'] = log.message
+                            logEntry['level'] = log.level
+                            logs.append(logEntry) 
+                        return logs                           
         return []                    
     
     
