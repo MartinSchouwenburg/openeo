@@ -26,7 +26,7 @@ api = Api(app)
 globalsSingleton.initGlobals()
 
 api.add_resource( OpenEOIPCollections,'/collections')
-api.add_resource( OpenEOIPCollection,'/collection/<string:name>')
+api.add_resource( OpenEOIPCollection,'/collections/<string:name>')
 api.add_resource( OpenEOIPCapabilities,'/capabilities')
 api.add_resource( OpenEOIPProcessDiscovery,'/processes')
 api.add_resource( OpenEOIPResult, '/result')
@@ -40,6 +40,7 @@ api.add_resource( OpenEOIJobByIdEstimate, '/jobs/<string:job_id>/estimate')
 api.add_resource( OpenEOProcessGraphs, '/process_graphs')
 api.add_resource( OpenEOProcessGraph,'/process_graphs/<string:name>')
 api.add_resource( OpenEOIPLogs,'/jobs/<string:job_id>/logs')
+
 ##api.add_resource( OpenEODelete,'/jobs/<string:job_id>')
 
 
