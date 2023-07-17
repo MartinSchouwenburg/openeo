@@ -23,6 +23,8 @@ STATUSCREATED = "created"
 STATUSRUNNING = "running"
 STATUSSTOPPED = "canceled"
 STATUSFINISHED = "finished"
+STATUSUNKNOWN = "unknown"
+
 
 
 
