@@ -1,5 +1,5 @@
-from workflow.worklfownode import WorkflowNode
-from constants.constants import *
+from worklfownode import WorkflowNode
+from constants import *
 from openeooperation import * 
 import copy
 import datetime
@@ -51,7 +51,6 @@ class EstimationNode:
 
         processNode = self.workflowNode[1]
         processObj = self.workflow.getOperation(processNode.process_id)
-        arguments = processNode.estimationValues
         executeObj =  copy.deepcopy(processObj)
         if hasattr(executeObj, 'estimate'):
             estimate = executeObj.estimate(processNode.estimationValues, processNode.argumentValues)

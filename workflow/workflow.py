@@ -1,8 +1,10 @@
-from workflow.worklfownode import WorkflowNode
-from workflow.executionnode import ExecutionNode
-from workflow.estimationnode import EstimationNode
+#from workflow.worklfownode import WorkflowNode
+import worklfownode
+from executionnode import ExecutionNode
+from estimationnode import EstimationNode
 from openeooperation import *
-from constants.constants import *
+from constants import constants
+##from constants.constants import *
 
 
 class Workflow(OpenEoOperation):
@@ -14,11 +16,31 @@ class Workflow(OpenEoOperation):
         self.getOperation = getOperation
         self.startNode = None
         for processKey,processValues in process_graph.items():
-            grNode = WorkflowNode(processValues)
+            grNode = worklfownode.WorkflowNode(processValues)
             self.workflowGraph[processKey] = grNode
             
         self.determineOutputNodes(self.workflowGraph)
 
+    def validateNode(self, node):
+        errors = []
+        for arg in node.arguments.items():
+                if ( node.argumentValues[arg[0]] == None): # ninput from other node
+                    fromNodeId = arg[1]['from_node']
+                    backNode = self.id2Node(fromNodeId)
+                    errors = errors + self.validateNode(backNode[1])
+                   
+        processObj = self.getOperation(node.process_id)
+        if processObj == None:
+             errors.append("missing \'operation\' " + node.process_id  )
+
+        return errors             
+
+    def validateGraph(self):
+            errors = []
+            for node in self.outputNodes:
+                errors = errors + self.validateNode(node[1])
+            return errors                
+                   
     def prepare(self, arguments):
         return ""
     
@@ -29,7 +51,7 @@ class Workflow(OpenEoOperation):
                 return self.startNode.estimate()
 
         except Exception as ex:
-            return createOutput(False, str(ex), DTERROR)
+            return createOutput(False, str(ex), constants.DTERROR)
 
     def run(self,job_id, toServer, fromServer ):
         try:
@@ -38,7 +60,7 @@ class Workflow(OpenEoOperation):
                 self.startNode.run(job_id, toServer, fromServer)
                 return self.startNode.outputInfo
         except Exception as ex:
-            return createOutput(False, str(ex), DTERROR)
+            return createOutput(False, str(ex), constants.DTERROR)
         
     def stop(self):
         if self.startNode != None:

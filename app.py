@@ -1,3 +1,12 @@
+import sys
+import os
+
+pp = os.getcwd()
+sys.path.append(pp + '/workflow')
+sys.path.append(pp + '/constants')
+sys.path.append(pp + '/operations')
+sys.path.append(pp)
+
 from flask import Flask, jsonify
 from flask_restful import Resource, Api
 from flask_cors import CORS
@@ -12,12 +21,13 @@ from openeojobs import OpenEOIPJobs, OpenEOIJobById,OpenEOIJobById2, OpenEOIJobB
 from openeoprocessgraphs import OpenEOProcessGraphs
 from openeoproccessgraph import OpenEOProcessGraph
 from openeologs import OpenEOIPLogs
+from openeovalidate import OpenEOIPValidate
+
 from processmanager import globalProcessManager
 from threading import Thread
 
-import sqlite3 as sqll3db
-
 #init part
+
 app = Flask(__name__)
 app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
 CORS(app)
@@ -40,6 +50,7 @@ api.add_resource( OpenEOIJobByIdEstimate, '/jobs/<string:job_id>/estimate')
 api.add_resource( OpenEOProcessGraphs, '/process_graphs')
 api.add_resource( OpenEOProcessGraph,'/process_graphs/<string:name>')
 api.add_resource( OpenEOIPLogs,'/jobs/<string:job_id>/logs')
+api.add_resource( OpenEOIPValidate,'/validation')
 
 ##api.add_resource( OpenEODelete,'/jobs/<string:job_id>')
 

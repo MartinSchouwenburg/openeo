@@ -1,9 +1,8 @@
-from workflow.workflow import Workflow
+from workflow import workflow
 from globals import getOperation
-from constants.constants import *
+from constants import constants
 import multiprocessing
 from datetime import datetime
-from constants.constants import *
 import uuid
 from multiprocessing import Pipe
 import json
@@ -61,25 +60,35 @@ class OpenEOParameter:
 
 
 class OpenEOProcess(multiprocessing.Process):
-    def __init__(self, user, request_doc, id):
-        if not 'process' in request_doc:
-            raise Exception("missing \'process\' key returns definition")
+    def __init__(self, user, request_json, id):
+        if not 'process' in request_json:
+            raise Exception("missing \'process\' key in definition")
+        self.title = get('title', request_json, '')
+        self.description = get('description', request_json, '')
+        self.plan = get('plan', request_json, 'none')
+        self.budget = get('budget', request_json, constants.UNDEFNUMBER)
+        self.log_level = get('log_level', request_json, 'all')        
         self.user = user
-        processValues = request_doc['process']
-        self.submitted = str(datetime.now())
-        self.status = STATUSCREATED
-        self.updated =  ''
+        processValues = request_json['process']
         self.workflow = None
+
+        if 'process_graph' in processValues:
+            self.workflow = workflow.Workflow(get('process_graph', processValues, None), getOperation)
+        else:
+            raise Exception("missing \'process_graph\' key in definition")  
+
+        self.submitted = str(datetime.now())
+        self.status = constants.STATUSCREATED
+        self.updated =  ''
         self.id = get('id', processValues, '')
-        self.title = get('title', processValues, '')
         self.summary = get('summary', processValues, '')
-        self.description = get('description', processValues, '')
+        self.process_description = get('description', processValues, '')
         if id == 0:
             self.job_id = str(uuid.uuid4())
         else:
             self.jon_id = id
-
-        self.workflow = Workflow(get('process_graph', processValues, None), getOperation)
+      
+                  
         self.parameters = []
         if 'parameters' in processValues:
             for parameter in processValues['parameters']:
@@ -87,9 +96,7 @@ class OpenEOProcess(multiprocessing.Process):
         self.categories = get('categories', processValues, [])
         self.deprecated = get('deprecated', processValues, False)
         self.experimental = get('experimental', processValues, False)
-        self.plan = get('plan', processValues, 'free')
-        self.budget = get('budget', processValues, UNDEFNUMBER)
-        self.log_level = get('log_level', processValues, 'All')
+
 
         self.exceptions = {}
         if "exceptions" in processValues:
@@ -116,7 +123,15 @@ class OpenEOProcess(multiprocessing.Process):
             self.links = get('links', processValues, [])   
 
         self.sendTo, self.fromServer = Pipe() #note: these pipes are only used for ouput to the child process
+
+    def validate(self):
+        errorsdict = []
+        errors = self.workflow.validateGraph()
+        for error in errors:
+            errorsdict.append({ "id" : self.job_id, "code" : "missing operation", "message" : error})
             
+        return errorsdict             
+
     def setItem(self, key, dict):
         if hasattr(self, key):
             dict[key] = getattr(self, key)
@@ -173,7 +188,7 @@ class OpenEOProcess(multiprocessing.Process):
             self.sendTo.close()
             self.fromServer.close()
             self.status = outputinfo['status']            
-            if outputinfo['status'] == STATUSSTOPPED:
+            if outputinfo['status'] == constants.STATUSSTOPPED:
                 self.cleanup()
                 
 

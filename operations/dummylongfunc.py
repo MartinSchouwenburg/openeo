@@ -1,6 +1,6 @@
 from openeooperation import *
-from operations.operationconstants import *
-from constants.constants import *
+from operationconstants import *
+from constants import constants
 from processmanager import globalProcessManager
 import time
 import random
@@ -20,12 +20,12 @@ class DummyLongFunc(OpenEoOperation):
         self.addInputParameter('a', 'why not', OPERATION_SCHEMA_NUMBER)
 
         self.addOutputParameter('to complete things',OPERATION_SCHEMA_NUMBER)
-        self.kind = PDUSERDEFINED
+        self.kind = constants.PDUSERDEFINED
 
-        self.a = UNDEFNUMBER
+        self.a = constants.UNDEFNUMBER
 
     def estimate(self, estimationValues, argumentValues):
-        outputInfo = { 'outputdimensions' : [3,3], 'outputtype' : DTRASTER, 'outputsubtype' : DTNUMBER}
+        outputInfo = { 'outputdimensions' : [3,3], 'outputtype' : constants.DTRASTER, 'outputsubtype' : constants.DTNUMBER}
         outputcost = { 'cost' : 20, 'duration' : 100, 'size' : 34, 'expires' : datetime.datetime(2025,1,1)}
 
         return (True, outputInfo, outputcost)
@@ -63,15 +63,15 @@ class DummyLongFunc(OpenEoOperation):
                         break 
                         
                                             
-                status = STATUSFINISHED
+                status = constants.STATUSFINISHED
                 if self.stopped == True:
-                    status = STATUSSTOPPED
+                    status = constants.STATUSSTOPPED
 
                 processOutput.put({'type': 'progressevent', 'progress' : 100, 'job_id' : job_id, 'status' : status}) 
                   
-                return createOutput(status, 23, DTNUMBER)
+                return createOutput(status, 23, constants.DTNUMBER)
             
-            return createOutput('error', "operation not runnable", DTERROR)
+            return createOutput('error', "operation not runnable", constants.DTERROR)
 
 def registerOperation():
      return DummyLongFunc()

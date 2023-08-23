@@ -1,5 +1,4 @@
 import os
-import pystac
 import json
 from flask import Flask, jsonify
 from flask_restful import Api, Resource

@@ -1,0 +1,98 @@
+{
+	"tests" : {
+		"base_process_full" : {
+			"title" : "test function for testing a process ",
+			"description" : "Nothing usefull",
+			"plan" : "expensive",
+			"budget" : "1000",
+			"log_level" : "who cares",
+			"property1" : "p1",
+			"process": {
+				"id": "test_id",
+				"description": "some text",
+				"summary" : "another text",
+				"process_graph": {
+					"firstMult": {
+						"process_id": "dummylongfunc",
+						"arguments": {
+							"a": 1000
+						},
+						"result": true
+					}
+				},
+				"parameters": [ {
+					"schema": {
+						"subtype": "string",
+						"deprecated": false,
+						"$schema": "http://json-schema.org/draft-07/schema#",
+						"$id": "http://example.com",
+						"type": "array",
+						"pattern": "/regex/",
+						"enum": [],
+						"minimum": 0,
+						"maximum": 0,
+						"minItems": 0,
+						"maxItems": 0,
+						"items": [],
+						"property1": null,
+						"property2": null
+					},
+					"name": "string",
+					"description": "string",
+					"optional" : false,
+					"deprecated": false,
+					"experimental": false,
+					"default": null
+					}
+				],
+				"returns": {
+					"description": "calculated map",
+					"schema": {}
+				},
+				"categories": [
+					"string",
+					"earth"
+				],
+				"exceptions" :{
+					"error code 23" : {
+						"description" : "some string",
+						"message" : "please dont do this",
+						"http" : 400
+					},
+					"error code 24" : {
+						"description" : "another string",
+						"message" : "still, please dont do this",
+						"http" : 400
+					}					
+				},
+				"deprecated": true,
+				"experimental": true
+			}
+		},
+		"base_process_missing_process" : {
+			"title" : "missing process"
+		},	
+		"base_process_missing_process_graph" : {
+			"title" : "missing process_graph",
+			"process": {
+				"id": "test_id",
+				"description": "mult two numbers"
+			}			
+		},
+		"base_process_minimal" : {
+			"process": {
+				"process_graph" : {
+				}
+			}			
+		},
+		"base_process_minimal_missing_return_schema" : {
+			"process": {
+				"returns" : {
+					"description" : "i am wrong"
+				},
+				"process_graph" : {
+				}
+			}			
+		}		
+	}
+}

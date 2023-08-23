@@ -1,7 +1,7 @@
 import threading
 from multiprocessing import Process, Queue
 from datetime import datetime
-from constants.constants import *
+from constants import constants
 
 def linkSection(begin, end):
         return {
@@ -10,7 +10,7 @@ def linkSection(begin, end):
                 "type" : "application/json"
             }
 def makeBaseResponseDict(job_id, status, code, baseurl = None, message=None) :
-    if status == STATUSUNKNOWN:
+    if status == constants.STATUSUNKNOWN:
         process = globalProcessManager.getProcess(None, job_id)
         if  process != None:
             status = process.status
@@ -36,7 +36,7 @@ class OutputInfo:
         self.progress = 0
         self.last_updated = str(datetime.now())
         self.output = None
-        self.status = STATUSQUEUED
+        self.status = constants.STATUSQUEUED
         self.logs = []
 
     def isFinished(self):
@@ -86,8 +86,8 @@ class ProcessManager:
                    
             if idx != -1:
                 if self.processQueue[i].user == user:
-                    if self.processQueue[i].status == STATUSCREATED:                    
-                        self.processQueue[i].status = STATUSQUEUED
+                    if self.processQueue[i].status == constants.STATUSCREATED:                    
+                        self.processQueue[i].status = constants.STATUSQUEUED
                         return "Job is queued"
                     else:
                         return "Job doesnt have correct status :"  + self.processQueue[i].status
@@ -116,12 +116,12 @@ class ProcessManager:
     def removedCreatedJob(self, job_id):
         for i in range(len(self.processQueue)):
             if str(self.processQueue[i].job_id) == job_id:
-                if self.processQueue[i].status == STATUSCREATED:
+                if self.processQueue[i].status == constants.STATUSCREATED:
                     self.processQueue.pop(i)
-                    return STATUSCREATED
+                    return constants.STATUSCREATED
                 else:
-                    return STATUSQUEUED
-        return STATUSUNKNOWN                
+                    return constants.STATUSQUEUED
+        return constants.STATUSUNKNOWN                
                 
 
 
@@ -181,7 +181,7 @@ class ProcessManager:
             with self.lockProcessQue:
                 if not len(self.processQueue) == 0:
                     for p in self.processQueue:
-                        if p.status == STATUSQUEUED:
+                        if p.status == constants.STATUSQUEUED:
                             eoprocess = self.processQueue.pop()
                             break
             if eoprocess != None:

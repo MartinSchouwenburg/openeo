@@ -7,12 +7,12 @@ class OpenEOIPCapabilities(Resource):
     def get(self):
         version = globalsSingleton.openeoip_config['version']
         CAPABILITIES = {
-            "api_version": "1.0.1",
+            "api_version": "1.2.0",
             "backend_version": version,
             "stac_version": "0.9.0",
-            "id": "openeo-ilwispy-driver",
-            "title": "IlwisPy Driver",
-            "description": "IlwisPy OpenEO driver",
+            "id": "openeo-itc-gip-driver",
+            "title": "itc-gip Driver",
+            "description": "ITC-GIP OpenEO driver",
             "endpoints": [
                 {
                     "path": "/service_types",
@@ -86,6 +86,12 @@ class OpenEOIPCapabilities(Resource):
                         "GET", "POST", "DELETE"
                     ]
                 },
+                {
+                    "path": "/jobs/{job_id}/estimate",
+                    "methods": [
+                        "GET"
+                    ]
+                }               
             ],
             "links": [
                 {

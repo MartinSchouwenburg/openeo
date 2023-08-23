@@ -1,6 +1,6 @@
 from openeooperation import *
-from operations.operationconstants import *
-from constants.constants import *
+from operationconstants import *
+from constants import constants
 import math
 
 class MultiplyOperation(OpenEoOperation):
@@ -24,23 +24,23 @@ class MultiplyOperation(OpenEoOperation):
         self.addLink('about', 'http://mathworld.wolfram.com/Product.html', 'Product explained by Wolfram MathWorld' )
         self.addLink('about', 'https://ieeexplore.ieee.org/document/8766229', 'IEEE Standard 754-2019 for Floating-Point Arithmetic')
 
-        self.kind = PDPREDEFINED
+        self.kind = constants.PDPREDEFINED
 
-        self.a = UNDEFNUMBER
-        self.b = UNDEFNUMBER
+        self.a = constants.UNDEFNUMBER
+        self.b = constants.UNDEFNUMBER
 
     def prepare(self, arguments):
         self.runnable = False
 
         if len(arguments) != 2:
-            return  createOutput(False,"number of parameters is not correct",  DTERROR)
+            return  createOutput(False,"number of parameters is not correct",  constants.DTERROR)
         
         if math.isnan(arguments['a']):
-            return createOutput(False, "the parameter a is not a number", DTERROR)
+            return createOutput(False, "the parameter a is not a number", constants.DTERROR)
         self.a = arguments['a']
         
         if math.isnan(arguments['b']):
-            return createOutput(False, "the parameter b is not a number", DTERROR)
+            return createOutput(False, "the parameter b is not a number", constants.DTERROR)
         self.b = arguments['b']
 
         self.runnable = True
@@ -56,9 +56,9 @@ class MultiplyOperation(OpenEoOperation):
 
             processOutput.put({'progress' : 100, 'job_id' : job_id, 'status' : 'finished'}) 
 
-            return createOutput('finished', c, DTNUMBER)
+            return createOutput('finished', c, constants.DTNUMBER)
         
-        return createOutput('error', "operation no runnable", DTERROR)
+        return createOutput('error', "operation no runnable", constants.DTERROR)
         
 def registerOperation():
      return MultiplyOperation()

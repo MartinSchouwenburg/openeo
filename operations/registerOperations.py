@@ -1,5 +1,5 @@
 from pathlib import Path
-from workflow.workflow import Workflow
+from workflow import workflow
 import os
 import importlib
 import json
@@ -43,7 +43,7 @@ def initOperationMetadata(getOperation):
         f = open(udfpath)
         modifiedDate = int(os.path.getmtime(udfpath))
         data = json.load(f)
-        wf = Workflow(data, getOperation)
+        wf = workflow.Workflow(data, getOperation)
         operationsMetaData[wf.name] = wf
         deltaWatch[filename] = modifiedDate
         

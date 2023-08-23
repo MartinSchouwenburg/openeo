@@ -8,10 +8,10 @@ from processmanager import makeBaseResponseDict
 
 class OpenEOIPResult(Resource):
     def post(self):
-        request_doc = request.get_json()
+        request_json = request.get_json()
         user = UserInfo(request)
         try:
-            process = OpenEOProcess(user, request_doc)
+            process = OpenEOProcess(user, request_json,0)
 
             if process.workflow != None:
                 outputInfo = process.workflow.run(False)

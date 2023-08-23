@@ -1,8 +1,8 @@
 import datetime
-from constants.constants import *
+from constants import constants
 
 class WorkflowNode:
-    UNDEFINED = 0
+    constants.UNDEFINED = 0
     OPERATION = 1
     JUNCTION = 2
     CONDITION = 3
@@ -29,7 +29,7 @@ class WorkflowNode:
         self.estimationValues = {} 
         for item in inputs.items():
             key = item[0]
-            self.estimationValues[key] = {'outputdimensions' : [], 'outputtype' : DTUNKNOWN, 'outputsubtype' : DTUNKNOWN}
+            self.estimationValues[key] = {'outputdimensions' : [], 'outputtype' : constants.DTUNKNOWN, 'outputsubtype' : constants.DTUNKNOWN}
             if isinstance(item[1], dict):
                 if ( 'from_node' in item[1]):
                     self.argumentValues[key] = None

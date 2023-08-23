@@ -1,6 +1,6 @@
 import threading
 import json
-from constants.constants import *
+from constants import constants
 
 
 operations1 = {}
@@ -71,7 +71,7 @@ def createOutput(status, value, datatype, format='')        :
     return {"status" : status, "value" : value, "datatype" : datatype, 'format' : format}  
 
 def messageProgress(processOutput, job_id, progress) :
-    processOutput.put({'type': 'progressevent','progress' : progress, 'job_id' : job_id, 'status' : STATUSRUNNING}) 
+    processOutput.put({'type': 'progressevent','progress' : progress, 'job_id' : job_id, 'status' : constants.STATUSRUNNING}) 
 
 
 

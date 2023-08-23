@@ -1,5 +1,5 @@
-from workflow.worklfownode import WorkflowNode
-from constants.constants import *
+from worklfownode import WorkflowNode
+from constants import *
 from openeooperation import * 
 import copy
 import sys
