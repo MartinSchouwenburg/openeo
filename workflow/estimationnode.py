@@ -8,7 +8,7 @@ class EstimationNode:
     def __init__(self, node, workflow):
         self.workflowNode = node
         self.workflow = workflow
-        self.estimationInfo = { 'cost' : 0, 'duration' : 0, 'size' : 0, 'expires' : datetime.datetime(2100,1,1)}
+        self.estimationInfo = { 'costs' : 0, 'duration' : 0, 'size' : 0, 'expires' : datetime.datetime(2100,1,1), "downloads_included" : ""}
 
     def estimate(self):
         if self.workflowNode != None:
@@ -19,7 +19,7 @@ class EstimationNode:
         return self.estimationInfo
     
     def merge(self, estimatiomInfo):
-        self.estimationInfo['cost'] = self.estimationInfo['cost'] + estimatiomInfo['cost']
+        self.estimationInfo['costs'] = self.estimationInfo['cost'] + estimatiomInfo['cost']
         self.estimationInfo['duration'] = self.estimationInfo['duration'] + estimatiomInfo['duration']
         self.estimationInfo['size'] = self.estimationInfo['size'] + estimatiomInfo['size']
         self.estimationInfo['expires'] = min([self.estimationInfo['expires'], estimatiomInfo['expires']])
@@ -27,8 +27,8 @@ class EstimationNode:
 
     
     def noEstimate(self):
-        outputInfo = { 'outputdimensions' : [], 'outputtype' : DTUNKNOWN, 'outputsubtype' : DTUNKNOWN}
-        outputcost = { 'cost' : 0, 'duration' : 0, 'size' :0, 'expires' : datetime.datetime(2100,1,1)}
+        outputInfo = { 'outputdimensions' : [], 'outputtype' : constants.DTUNKNOWN, 'outputsubtype' : constants.DTUNKNOWN}
+        outputcost = { 'costs' : 0, 'duration' : 0, 'size' :0, 'expires' : datetime.datetime(2100,1,1), "downloads_included" : ""}
 
         return (False, outputInfo, outputcost)
     
