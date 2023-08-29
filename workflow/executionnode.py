@@ -37,7 +37,7 @@ class ExecutionNode :
                 fromNodeId = arg[1]['from_node']
                 backNode = self.workflow.id2Node(fromNodeId)
                 exNode = ExecutionNode(backNode,self.workflow)
-                if exNode.run():
+                if exNode.run(job_id, toServer, fromServer):
                      self.workflowNode[1].argumentValues[arg[0]] = exNode.outputInfo["value"]
                 else:
                     return False                     
@@ -49,16 +49,16 @@ class ExecutionNode :
             executeObj =  copy.deepcopy(processObj)
             message = executeObj.prepare(arguments)
             if not executeObj.runnable:
-                self.outputInfo =  createOutput(False, message, DTERROR)
+                self.outputInfo =  createOutput(False, message, constants.DTERROR)
                 return False
 
             try:
-                self.outputInfo = executeObj.run(processOutput=toServer, processInput = fromServer, job_id=job_id)
+                self.outputInfo = executeObj.run(job_id, toServer, fromServer)
                     
             except Exception:
                     e_type, e_value, e_tb = sys.exc_info()
                     traceback_model = dict(message=str(e_value),traceback=traceback.format_tb(e_tb),type=str(e_type))                       
-                    self.outputInfo  = createOutput(False, str(traceback_model), DTERROR)
+                    self.outputInfo  = createOutput(False, str(traceback_model), constants.DTERROR)
                     return False
 
         return True
