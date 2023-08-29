@@ -50,7 +50,7 @@ class DummyLongFunc(OpenEoOperation):
                     if r > 95.0:
                         globalProcessManager.addLog4job(job_id, logCount, 'warning', 'dummy message ' + str(r))
                         timenow = str(datetime.now())
-                        processOutput.put({'type' : 'logginevent', 'job_id': job_id, 'id' : logCount, 'level' : 'info', 'message' : 'dummy ' + str(r), 'timestamp' : timenow})
+                        put2Queue(processOutput,{'type' : 'logginevent', 'job_id': job_id, 'id' : logCount, 'level' : 'info', 'message' : 'dummy ' + str(r), 'timestamp' : timenow} )
                         logCount = logCount + 1
 
                     if currenttime - lasttime > 5:
@@ -67,7 +67,7 @@ class DummyLongFunc(OpenEoOperation):
                 if self.stopped == True:
                     status = constants.STATUSSTOPPED
 
-                processOutput.put({'type': 'progressevent', 'progress' : 100, 'job_id' : job_id, 'status' : status}) 
+                put2Queue(processOutput, {'type': 'progressevent', 'progress' : 100, 'job_id' : job_id, 'status' : status}) 
                   
                 return createOutput(status, 23, constants.DTNUMBER)
             

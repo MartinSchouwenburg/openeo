@@ -47,14 +47,14 @@ class MultiplyOperation(OpenEoOperation):
         return ""
               
 
-    def run(self, job_id, processOutput):
+    def run(self, job_id, processOutput, processInput):
         if self.runnable:
 
-            processOutput.put({'progress' : 0, 'job_id' : job_id, 'status' : 'running'})
+            put2Queue(processOutput, {'progress' : 0, 'job_id' : job_id, 'status' : 'running'})
 
             c = self.a * self.b
 
-            processOutput.put({'progress' : 100, 'job_id' : job_id, 'status' : 'finished'}) 
+            put2Queue(processOutput,{'progress' : 100, 'job_id' : job_id, 'status' : 'finished'}) 
 
             return createOutput('finished', c, constants.DTNUMBER)
         
