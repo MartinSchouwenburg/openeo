@@ -24,6 +24,7 @@ STATUSRUNNING = "running"
 STATUSSTOPPED = "canceled"
 STATUSFINISHED = "finished"
 STATUSUNKNOWN = "unknown"
+CUSTOMERROR = "custom error"
 
 
 
