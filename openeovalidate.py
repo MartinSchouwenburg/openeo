@@ -10,6 +10,6 @@ class OpenEOIPValidate(Resource):
         user = UserInfo(request)
         process = OpenEOProcess(user, request_json,0)
         errors = process.validate()
-        return make_response(jsonify({ "errors": errors}))
+        return make_response(jsonify({ "errors": errors}), 200)
 
  

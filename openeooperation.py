@@ -37,9 +37,11 @@ class OpenEoOperation:
     stopped = False
 
     def startListener(self, processInput):
-        message_thread = threading.Thread(target=message_handler,args=(self, processInput,) )
-        message_thread.start()
+        if processInput != None: ## synchronous calls dont have listeners
+            message_thread = threading.Thread(target=message_handler,args=(self, processInput,) )
+            message_thread.start()
 
+          
     def toDict(self):
         iparameters = []
         for value in self.inputParameters.values():
@@ -71,7 +73,12 @@ def createOutput(status, value, datatype, format='')        :
     return {"status" : status, "value" : value, "datatype" : datatype, 'format' : format}  
 
 def messageProgress(processOutput, job_id, progress) :
-    processOutput.put({'type': 'progressevent','progress' : progress, 'job_id' : job_id, 'status' : constants.STATUSRUNNING}) 
+    if processOutput != None:
+        processOutput.put({'type': 'progressevent','progress' : progress, 'job_id' : job_id, 'status' : constants.STATUSRUNNING}) 
+
+def put2Queue(processOutput, content):
+    if processOutput != None: ##synchronous calls dont have output queues
+        processOutput.put(content)        
 
 
 

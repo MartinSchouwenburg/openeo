@@ -2,26 +2,32 @@ from flask import make_response, jsonify, request
 from flask_restful import Resource
 from workflow.openeoprocess import OpenEOProcess
 from processmanager import globalProcessManager, makeBaseResponseDict
-from datetime import datetime
 from userinfo import UserInfo
 from constants.constants import *
+from globals import globalsSingleton
+from constants import constants
 
 class OpenEOIPJobs(Resource):
     def processPostJobId(self, user, request_json):
         try:
             process = OpenEOProcess(user, request_json, 0)
             globalProcessManager.addProcess(process)
-            res  = makeBaseResponseDict(str(process.job_id),'created', 200, request.base_url )
-            return make_response(jsonify(res),200)
+            url = request.base_url + "/" + process.job_id
+            response =  make_response(jsonify(process.job_id),201)
+            response.headers['OpenEO-Identifier'] = process.job_id
+            response.headers['Location'] = url
+            return response
         except Exception as ex:
-            return make_response(makeBaseResponseDict(-1, 'error', 404, None, str(ex)))   
+            err = globalsSingleton.errorJson(constants.CUSTOMERROR, 400, str(ex))
+            return make_response(jsonify(err), err.code)   
 
     def processGetJobs(self, user): 
         try:        
-            jobs = globalProcessManager.allJobs4User(user, None,request.base_url)
-            return make_response(jsonify({'jobs' : jobs}),200)
+            jobs = globalProcessManager.allJobsMetadata4User(user, None,request.base_url)
+            return  make_response(jsonify({'jobs' : jobs}),200)
         except Exception as ex:
-            return make_response(makeBaseResponseDict(-1, 'error', 404, None, str(ex))) 
+            err = globalsSingleton.errorJson(constants.CUSTOMERROR, 400, str(ex))
+            return make_response(jsonify(err), err.code) 
                       
 
     def post(self):
@@ -32,16 +38,23 @@ class OpenEOIPJobs(Resource):
             user = UserInfo(request)
             return self.processGetJobs(user)
           
-class OpenEOIJobById2(Resource):
+class OpenEOAddJob2Queue(Resource):
    def processPostJobIdResults(self, job_id, user, request_json):
         try:
             if not 'id' in request_json:
-                return make_response(makeBaseResponseDict(-1, 'error', 404, None, 'missing \'job_id\' key in definition'))
+                err = globalsSingleton.errorJson(constants.CUSTOMERROR, job_id, 'missing \'job_id\' key in definition')
+                return make_response(jsonify(err), err.code)
             
-            message = globalProcessManager.queueJob(user, job_id)
-            return make_response(makeBaseResponseDict(-1, 'queued', 200, None, message))
+            message, error = globalProcessManager.queueJob(user, job_id)
+            if error == "":
+                return make_response(message, 202)
+            else:
+                err = globalsSingleton.errorJson(error, job_id, message)
+                return make_response(jsonify(err),err.code)
+                
         except Exception as ex:
-            return make_response(makeBaseResponseDict(-1, 'error', 404, None, str(ex)))        
+            err = globalsSingleton.errorJson(constants.CUSTOMERROR, job_id, str(ex))
+            return make_response(jsonify(err), err.code)      
        
    def post(self, job_id):
         request_json = request.get_json()
@@ -54,24 +67,24 @@ class OpenEOIJobByIdEstimate(Resource):
         try:
             estimate = globalProcessManager.makeEstimate(user, job_id)
             costs = estimate[0][2]
-            res = makeBaseResponseDict(job_id,request.base_url,'updated', 200 )
-            res['estimated'] = costs
-            return make_response(jsonify(res),estimate[1]) 
+            return make_response(jsonify(costs),200) 
         except Exception as ex:
-            return make_response(makeBaseResponseDict(-1, 'error', 404, None, str(ex)))        
+            err = globalsSingleton.errorJson(constants.CUSTOMERROR, job_id, str(ex))
+            return make_response(jsonify(err), err.code)       
        
    def get(self, job_id):
         user = UserInfo(request)
         return self.processGetEstimate(job_id, user)
  
         
-class OpenEOIJobById(Resource):
+class OpenEOMetadata4JobById(Resource):
     def processGetJobId(self, user, job_id):
         try:
-            jobs = globalProcessManager.allJobs4User(user, job_id,request.base_url)
-            return make_response(jsonify({'jobs' : jobs}),200)
+            jobs = globalProcessManager.allJobsMetadata4User(user, job_id,request.base_url)
+            return make_response(jsonify(jobs),200)
         except Exception as ex:
-            return make_response(makeBaseResponseDict(-1, 'error', 404, None, str(ex)))  
+            err = globalsSingleton.errorJson(constants.CUSTOMERROR, job_id, str(ex))
+            return make_response(jsonify(err), err.code)  
         
     def processDeleteId(self, job_id, user):
         try:
@@ -89,13 +102,14 @@ class OpenEOIJobById(Resource):
                 globalProcessManager.addProcess(process)
                 res = makeBaseResponseDict(job_id,'updated', 204,request.base_url )
                 
-                return make_response(jsonify(res),200)
+                return make_response(jsonify(res),204)
             if status == STATUSQUEUED:
-                res = makeBaseResponseDict(job_id,'error', 400,request.base_url,"Batch job is locked due to a queued or running batch computation." )
-                return make_response(jsonify(res),400) 
+                err = globalsSingleton.errorJson("JobLocked", job_id, str(ex))
+                return make_response(jsonify(err), err.code)      
                
         except Exception as ex:
-            return make_response(makeBaseResponseDict(-1, 'error', 404, None, str(ex)))        
+            err = globalsSingleton.errorJson(constants.CUSTOMERROR, job_id, str(ex))
+            return make_response(jsonify(err), err.code)    
 
 
     def get(self, job_id):

@@ -15,7 +15,7 @@ def makeBaseResponseDict(job_id, status, code, baseurl = None, message=None) :
         if  process != None:
             status = process.status
 
-    res = { "job_id" : job_id,
+    res = { "id" : job_id,
             "code" : code,
             "status" : status,
             "submitted" : str(datetime.now()),
@@ -26,6 +26,9 @@ def makeBaseResponseDict(job_id, status, code, baseurl = None, message=None) :
     if message != None:
         res['message'] = message
     return res
+
+def ErrorResponse(id, code, message):
+        return { "id" : id, "code" : code, "message" : message}
 
 def worker(openeoprocess, outputQueue):
     openeoprocess.run(outputQueue)
@@ -88,17 +91,17 @@ class ProcessManager:
                 if self.processQueue[i].user == user:
                     if self.processQueue[i].status == constants.STATUSCREATED:                    
                         self.processQueue[i].status = constants.STATUSQUEUED
-                        return "Job is queued"
+                        return "Job " + str(job_id) + " is queued",""
                     else:
-                        return "Job doesnt have correct status :"  + self.processQueue[i].status
+                        return "Job doesnt have correct status :"  + self.processQueue[i].status,constants.CUSTOMERROR
                 else:
-                    return "Job is owned by a different user"
+                    return "Job is owned by a different user", constants.CUSTOMERROR
             else: # its no longer in the processqueue so it might have shifted to the output list
                 for jobb_id, item in self.outputs: 
                     if str(jobb_id) == job_id: #if its there the client shouldn't ask for queuing as it is already running/done/canceled
-                        return "Job doesnt have correct status :"  + item.status
+                        return "Job doesnt have correct status :"  + item.status, constants.CUSTOMERROR
                     
-            return "Job isn't present in the system"
+            return "Job isn't present in the system","JobNotFound"
                      
     def stopJob(self, user, job_id):
         with self.lockOutput:
@@ -106,6 +109,8 @@ class ProcessManager:
                 if value.eoprocess.user == user:
                     if job_id == str(value.eoprocess.job_id):
                         value.eoprocess.stop()
+                        return
+                            
 
     def makeEstimate(self, user, job_id):
         eoprocess = self.getProcess(user, job_id)
@@ -135,13 +140,13 @@ class ProcessManager:
         return None            
 
 
-    def allJobs4User(self, user, processid, baseurl):
+    def allJobsMetadata4User(self, user, processid, baseurl):
         with self.lockOutput:
             processes = []   
             for key,value in self.outputs.items():
                 if value.eoprocess.user == user:
                     if processid == None or ( processid == str(value.eoprocess.job_id)):
-                        dict = {} ##value.eoprocess.toDict( processid == None)
+                        dict = value.eoprocess.toDict( processid == None)
                         dict['progress'] = value.progress
                         dict['updated'] = value.last_updated
                         dict['status'] = value.status
