@@ -3,6 +3,7 @@ import json
 from pathlib import Path
 import pickle
 from operations.registerOperations import initOperationMetadata 
+from constants import constants
 
 def getOperation(operationName)        :
     if  operationName in globalsSingleton.operations:
@@ -23,6 +24,8 @@ class Globals :
         if  self.openeoip_config == None:
             openeoip_configfile = open('./config/config.json')
             self.openeoip_config = json.load(openeoip_configfile)
+            codesfile = open('./config/default_error_codes.json')
+            self.default_errrors = json.load(codesfile)                    
       
 
     def insertFileNameInDatabase(self, dataid, filepath):
@@ -71,6 +74,16 @@ class Globals :
                 data = f.read()
             self.internal_database = pickle.loads(data) 
             return True
+        
+    def errorJson(self, errorStringCode, id, message):
+        if errorStringCode == constants.CUSTOMERROR:
+            return {"id" : id, "code" : 400, "message" : message }
+        else:
+            if errorStringCode in self.default_errrors:
+                predefCode = self.default_errrors[errorStringCode].http                    
+                return {"id" : id, "code" : predefCode, "message" : message }
+                
+        return {"id" : id, "code" : 400, "message" : message }
 
     
         
