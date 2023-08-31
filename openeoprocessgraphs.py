@@ -3,6 +3,7 @@ from flask import make_response, jsonify, request
 from globals import globalsSingleton
 from constants.constants import *
 from processmanager import linkSection
+from userinfo import UserInfo
 
 class OpenEOProcessGraphs(Resource):
     def get(self):
@@ -14,3 +15,8 @@ class OpenEOProcessGraphs(Resource):
         processes["links"]  = linkSection(request.base_url, 'processes')
 
         return make_response(jsonify(processes))
+    
+    def put(self, process_graph_id):
+        request_json = request.get_json()
+        user = UserInfo(request)
+        
