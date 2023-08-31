@@ -38,8 +38,11 @@ class OpenEOIPJobs(Resource):
             user = UserInfo(request)
             return self.processGetJobs(user)
           
-class OpenEOAddJob2Queue(Resource):
-   def processPostJobIdResults(self, job_id, user, request_json):
+class OpenEOJobResults(Resource):
+   def returnJobResultUrls(self, job_id, user, request_json):
+       return ""
+       
+   def queueJob(self, job_id, user, request_json):
         try:
             if not 'id' in request_json:
                 err = globalsSingleton.errorJson(constants.CUSTOMERROR, job_id, 'missing \'job_id\' key in definition')
@@ -59,9 +62,13 @@ class OpenEOAddJob2Queue(Resource):
    def post(self, job_id):
         request_json = request.get_json()
         user = UserInfo(request)
-        return self.processPostJobIdResults(user, job_id, user, request_json)              
+        return self.queueJob(user, job_id, user, request_json)  
 
-    
+   def get(self, job_id):
+        request_json = request.get_json()
+        user = UserInfo(request)
+        return self.returnJobResultUrls(user, job_id, user, request_json)   
+
 class OpenEOIJobByIdEstimate(Resource):
    def processGetEstimate(self, job_id, user):
         try:
