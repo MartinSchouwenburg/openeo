@@ -18,7 +18,7 @@ from openeocollection import OpenEOIPCollection
 from openeoprocessdiscovery import OpenEOIPProcessDiscovery
 from openeoresult import OpenEOIPResult
 from openeofileformats import OpenEOIPFileFormats
-from openeojobs import OpenEOIPJobs, OpenEOMetadata4JobById,OpenEOAddJob2Queue, OpenEOIJobByIdEstimate
+from openeojobs import OpenEOIPJobs, OpenEOMetadata4JobById,OpenEOJobResults, OpenEOIJobByIdEstimate
 from openeoprocessgraphs import OpenEOProcessGraphs
 from openeoproccessgraph import OpenEOProcessGraph
 from openeologs import OpenEOIPLogs
@@ -45,9 +45,9 @@ def index():
     CAPABILITIES = replace_links_in_capabilities()
     return make_response(jsonify(CAPABILITIES), 200)
 
-@app.route('/.well-known/openeo')
-def well_known():
-        return WellKnown.get(api)
+#@app.route('/.well-known/openeo')
+#def well_known():
+#        return WellKnown.get(api)
 
 
 api.add_resource( OpenEOIPCollections,'/collections')
@@ -60,7 +60,7 @@ api.add_resource( OpenEOIPServices, '/services')
 api.add_resource( OpenEOIPServiceTypes, '/service_types')
 api.add_resource( OpenEOIPJobs, '/jobs') 
 api.add_resource( OpenEOMetadata4JobById, '/jobs/<string:job_id>') 
-api.add_resource( OpenEOAddJob2Queue, '/jobs/<string:job_id>/results') 
+api.add_resource( OpenEOJobResults, '/jobs/<string:job_id>/results') 
 api.add_resource( OpenEOIJobByIdEstimate, '/jobs/<string:job_id>/estimate') 
 api.add_resource( OpenEOProcessGraphs, '/process_graphs')
 api.add_resource( OpenEOProcessGraph,'/process_graphs/<string:name>')
