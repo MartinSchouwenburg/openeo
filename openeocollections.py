@@ -2,7 +2,7 @@ import os
 import pystac
 import json
 import uuid 
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from flask_restful import Api, Resource
 ##from globals import openeoip_config
 from globals import globalsSingleton
@@ -11,14 +11,22 @@ from eoreader.bands import *
 from pathlib import Path
 import pickle
 import glob
+from userinfo import UserInfo
 
 class OpenEOIPCollections(Resource):
     def get(self):
+        ##request_json = request.get_json()
         return jsonify(loadCollections()) 
     
 
 def loadCollections():
-    data_location = globalsSingleton.openeoip_config['data_locations']
+    user = UserInfo(request)
+    data_locations = []
+    data_locations.append(globalsSingleton.openeoip_config['data_locations']['root_data_location'])
+    loc = globalsSingleton.openeoip_config['data_locations']['root_user_data_location']
+    loc['location'] = os.path.join(loc['location'],user.username)
+    data_locations.append(loc)
+
        
     allJson = {}
     allCollections = []
@@ -27,7 +35,7 @@ def loadCollections():
     if ( not os.path.exists(cacheFolder)):
         os.makedirs(cacheFolder)
 
-    for location in data_location:
+    for location in data_locations:
         path = location["location"]
 
         extraPath = os.path.join(path, 'metadata.json')
@@ -35,24 +43,25 @@ def loadCollections():
         if os.path.exists(extraPath):
             extraMd = open(extraPath)
             extraMetadataAll = json.load(extraMd)  
-        files = os.listdir(path)
-        for filename in files:
-            if filename != 'metadata.json':
-                fullPath = os.path.join(path,  filename)
+        if os.path.isdir(path):    
+            files = os.listdir(path)
+            for filename in files:
+                if filename != 'metadata.json':
+                    fullPath = os.path.join(path,  filename)
 
-                collectionJsonDict = checkCache(cacheFolder, 'base_'+ filename, fullPath)
-                if ( collectionJsonDict == {}):
-                    prod = Reader().open(fullPath)
-                    extraMetadata = None
-                    if filename in extraMetadataAll:
-                        extraMetadata = extraMetadataAll[filename]
-                        
-                    collectionJsonDict = createCollectionJson(prod, extraMetadata, fullPath)
-                    save2Cache(collectionJsonDict, fullPath, 'base_' + filename, cacheFolder)
-                else:
-                    globalsSingleton.insertFileNameInDatabase(collectionJsonDict["id"], fullPath)
+                    collectionJsonDict = checkCache(cacheFolder, 'base_'+ filename, fullPath)
+                    if ( collectionJsonDict == {}):
+                        prod = Reader().open(fullPath)
+                        extraMetadata = None
+                        if filename in extraMetadataAll:
+                            extraMetadata = extraMetadataAll[filename]
+                            
+                        collectionJsonDict = createCollectionJson(prod, extraMetadata, fullPath)
+                        save2Cache(collectionJsonDict, fullPath, 'base_' + filename, cacheFolder)
+                    else:
+                        globalsSingleton.insertFileNameInDatabase(collectionJsonDict["id"], fullPath)
 
-                allCollections.append(collectionJsonDict)
+                    allCollections.append(collectionJsonDict)
 
     allJson["collections"] = allCollections
     allJson["links"] = globalsSingleton.openeoip_config['links']
