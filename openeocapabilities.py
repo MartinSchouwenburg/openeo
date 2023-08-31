@@ -48,6 +48,12 @@ CAPABILITIES = {
                 ]
             },
             {
+                "path": "/udf_runtimes",
+                "methods": [
+                    "GET"
+                ]
+            },            
+            {
                 "path": "/processes/{process_id}",
                 "methods": [
                     "GET"
