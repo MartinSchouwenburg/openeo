@@ -36,16 +36,22 @@ def initOperationMetadata(getOperation):
 
     # udf files
     home = Path.home()
-    udfFolder = os.path.join(home, 'Documents/openeo/udf')
-    file_names = [f for f in os.listdir(udfFolder) if f.endswith('.udf')]
-    for filename in file_names:
-        udfpath = os.path.join(udfFolder, filename)        
-        f = open(udfpath)
-        modifiedDate = int(os.path.getmtime(udfpath))
-        data = json.load(f)
-        wf = workflow.Workflow(data, getOperation)
-        operationsMetaData[wf.name] = wf
-        deltaWatch[filename] = modifiedDate
+    openeoip_configfile = open('./config/config.json')
+    openeoip_config = json.load(openeoip_configfile)
+    udf_locations = openeoip_config["data_locations"]["udf_locations"]
+    for udf_location in udf_locations:
+        location = udf_location["location"]
+        udfFolder = os.path.join(home, location)
+        file_names = [f for f in os.listdir(udfFolder) if f.endswith('.udf')]
+        for filename in file_names:
+            udfpath = os.path.join(udfFolder, filename)        
+            f = open(udfpath)
+            modifiedDate = int(os.path.getmtime(udfpath))
+            data = json.load(f)
+            processValues = data['process']
+            wf = workflow.Workflow(processValues['process_graph'], getOperation)
+            operationsMetaData[processValues['id']] = wf
+            deltaWatch[filename] = modifiedDate
         
 
 
