@@ -31,7 +31,8 @@ def loadCollections():
     allJson = {}
     allCollections = []
     home = Path.home()
-    cacheFolder = os.path.join(home, 'Documents/openeo/cache')
+    loc = globalsSingleton.openeoip_config['data_locations']['cache_location']
+    cacheFolder = os.path.join(home, loc['location'])
     if ( not os.path.exists(cacheFolder)):
         os.makedirs(cacheFolder)
 
