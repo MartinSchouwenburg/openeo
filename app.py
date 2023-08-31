@@ -23,9 +23,12 @@ from openeoprocessgraphs import OpenEOProcessGraphs
 from openeoproccessgraph import OpenEOProcessGraph
 from openeologs import OpenEOIPLogs
 from openeovalidate import OpenEOIPValidate
+from openeoudfruntimes import OpenEOUdfRuntimes
+from openeofiles import OpenEODownloadFile
 
 from processmanager import globalProcessManager
 from threading import Thread
+from wellknown import WellKnown
 
 #init part
 
@@ -41,6 +44,10 @@ globalsSingleton.initGlobals()
 def index():
     CAPABILITIES = replace_links_in_capabilities()
     return make_response(jsonify(CAPABILITIES), 200)
+
+@app.route('/.well-known/openeo')
+def well_known():
+        return WellKnown.get(api)
 
 
 api.add_resource( OpenEOIPCollections,'/collections')
@@ -59,6 +66,8 @@ api.add_resource( OpenEOProcessGraphs, '/process_graphs')
 api.add_resource( OpenEOProcessGraph,'/process_graphs/<string:name>')
 api.add_resource( OpenEOIPLogs,'/jobs/<string:job_id>/logs')
 api.add_resource( OpenEOIPValidate,'/validation')
+api.add_resource( OpenEOUdfRuntimes,'/udf_runtimes')
+api.add_resource( OpenEODownloadFile,'/files/<string:filepath>')
 
 ##api.add_resource( OpenEODelete,'/jobs/<string:job_id>')
 
