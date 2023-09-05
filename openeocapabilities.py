@@ -3,10 +3,13 @@ from flask import make_response, jsonify, request
     
 from globals import globalsSingleton
 
+OPENEO_GIP_ROOT = "http://127.0.0.1:5000/"
+
 CAPABILITIES = {
         "api_version": "1.2.0",
-        "backend_version": "1",
-        "stac_version": "0.9.0",
+        "backend_version": "0.1-alpha1",
+        "stac_version": "1.0.0",
+        "type": "Catalog",
         "id": "openeo-itc-gip-driver",
         "title": "itc-gip Driver",
         "description": "ITC-GIP OpenEO driver",
@@ -104,31 +107,13 @@ CAPABILITIES = {
         ],
         "links": [
             {
-                "href": "http://www.test-openeo-ip.org",
+                "href": OPENEO_GIP_ROOT,
                 "rel": "about",
                 "type": "text/html",
                 "title": "Homepage of the service provider"
             },
             {
-                "href": "https://www.test-openeo-ip.org/tos",
-                "rel": "terms-of-service",
-                "type": "text/html",
-                "title": "Terms of Service"
-            },
-            {
-                "href": "https://www.test-openeo-ip.org/privacy",
-                "rel": "privacy-policy",
-                "type": "text/html",
-                "title": "Privacy Policy"
-            },
-            {
-                "href": "http://www.test-openeo-ip.org/.well-known/openeo",
-                "rel": "version-history",
-                "type": "application/json",
-                "title": "List of supported openEO versions"
-            },
-            {
-                "href": "http://www.test-openeo-ip.org/api/v1.0/collections",
+                "href": OPENEO_GIP_ROOT + "collections",
                 "rel": "data",
                 "type": "application/json",
                 "title": "List of Datasets"
