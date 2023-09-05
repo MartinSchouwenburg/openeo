@@ -45,10 +45,9 @@ def index():
     CAPABILITIES = replace_links_in_capabilities()
     return make_response(jsonify(CAPABILITIES), 200)
 
-#@app.route('/.well-known/openeo')
-#def well_known():
-#        return WellKnown.get(api)
-
+@app.route('/.well-known/openeo')
+def well_known():
+        return WellKnown.get(api)
 
 api.add_resource( OpenEOIPCollections,'/collections')
 api.add_resource( OpenEOIPCollection,'/collections/<string:name>')
