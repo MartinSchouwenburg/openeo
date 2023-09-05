@@ -6,6 +6,9 @@ from processmanager import linkSection
 from userinfo import UserInfo
 
 class OpenEOProcessGraphs(Resource):
+    def __init__(self):
+        Resource.__init__(self)
+
     def get(self):
         operations = []
         for operation in globalsSingleton.operations.values() :
