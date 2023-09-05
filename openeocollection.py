@@ -43,7 +43,7 @@ class OpenEOIPCollection(Resource):
        
             collectionJsonDict['cube:dimensions'] = self.getDimensions(prod)
             collectionJsonDict['summaries'] = { "constellation" : prod.stac.constellation,
-                                        "instruments" : prod.instrument}
+                                        "instruments" : self.getInstrument(prod.instrument)}
             od = prod.get_orbit_direction()
             clouds  = prod.get_cloud_cover()
             collectionJsonDict['eo:cloud_cover'] = [0, clouds]
@@ -65,6 +65,15 @@ class OpenEOIPCollection(Resource):
             save2Cache(collectionJsonDict, filepath, 'detailed_' + filename, cacheFolder)
 
         return jsonify(collectionJsonDict)
+        
+    def getInstrument(self, value):
+        str(type(value))
+        if type(value) == str:
+            return value
+        if hasattr(value, 'name') and hasattr(value, 'value'):
+            return value.value
+        
+        return str(value) ## probably wrong but at least gives a result
     
     def getDimensions(self, prod):
        proj = prod.stac.proj
