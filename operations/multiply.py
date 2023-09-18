@@ -5,25 +5,7 @@ import math
 
 class MultiplyOperation(OpenEoOperation):
     def __init__(self):
-
-        self.name = 'multiply'
-        self.description = 'Multiplies the two numbers `a` and `b` (*a * b*) and returns the computed product.\n\nNo-data values are taken into account so that `null` is returned if any element is such a value.\n\nThe computations follow [IEEE Standard 754](https://ieeexplore.ieee.org/document/8766229) whenever the processing environment supports it.'
-        self.summary = 'Multiplication of two numbers'
-        self.categories = ['math']
-        self.exceptions['MultiplicandMissing'] = { 'message': 'Multiplication requires at least two number'}
-
-        self.addInputParameter('a', 'The multiplier', OPERATION_SCHEMA_NUMBER)
-        self.addInputParameter('b', 'The multiplicand', OPERATION_SCHEMA_NUMBER)
-
-        self.addOutputParameter('The computed product of the two numbers',OPERATION_SCHEMA_NUMBER)
-
-        self.examples.append({ 'arguments' : {'a' : 5, 'b' : 2.5}, 'returns' : 12.5})
-        self.examples.append({ 'arguments' : {'a' : -2, 'b' : -4}, 'returns' : 8})
-        self.examples.append({ 'arguments' : {'a' : 1, 'b' : None}, 'returns' : None})
-
-        self.addLink('about', 'http://mathworld.wolfram.com/Product.html', 'Product explained by Wolfram MathWorld' )
-        self.addLink('about', 'https://ieeexplore.ieee.org/document/8766229', 'IEEE Standard 754-2019 for Floating-Point Arithmetic')
-
+        self.loadOpenEoJsonDef('multiply.json')
         self.kind = constants.PDPREDEFINED
 
         self.a = constants.UNDEFNUMBER
