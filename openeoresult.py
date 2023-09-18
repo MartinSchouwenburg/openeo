@@ -30,12 +30,12 @@ class OpenEOIPResult(Resource):
                                         direct_passthrough=True)
                         return response
                     
-                response =  make_response(makeBaseResponseDict(process.job_id, 'error', 404, None, outputInfo["value"]))
+                response =  make_response(makeBaseResponseDict(process.job_id, 'error', 404, None, outputInfo["value"]),400)
                 response.headers['Content-Type'] = 'string'
 
                 return response
         except Exception as ex:
-            return make_response(makeBaseResponseDict(-1, 'error', 404, None, str(ex)))
+            return make_response(makeBaseResponseDict(-1, 'error', 404, None, str(ex)),400)
         
 
     def makeType(self, tp):
