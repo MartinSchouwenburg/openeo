@@ -41,7 +41,31 @@ class OpenEoOperation:
             message_thread = threading.Thread(target=message_handler,args=(self, processInput,) )
             message_thread.start()
 
-          
+    def loadOpenEoJsonDef(self, filename):
+        jsondeffile = open('./operations/' + filename)
+        jsondef = json.load(jsondeffile)
+
+        self.name = jsondef['id']
+        self.description = jsondef['description']
+        self.summary = jsondef['summary']
+        self.categories = jsondef['categories']
+        for ex in jsondef['exceptions'].items():
+            self.exceptions[ex[0]] = ex[1]['message']
+
+        for parm in jsondef['parameters']:
+          self.addInputParameter(parm['name'], parm['description'], parm['schema'])
+
+        if 'returns' in jsondef:
+            self.addOutputParameter(jsondef['returns']['description'],jsondef['returns']['schema'])
+
+        if 'examples' in jsondef:
+            for ex in jsondef['examples']:
+                self.examples.append(str(ex))
+
+        if 'links' in jsondef:
+            for lnk in jsondef['links']:
+                self.addLink(lnk)
+      
     def toDict(self):
         iparameters = []
         for value in self.inputParameters.values():
@@ -66,8 +90,8 @@ class OpenEoOperation:
         self.outputParameters['description'] = description
         self.outputParameters['schema'] = schema
 
-    def addLink(self, ref, href, title):       
-        self.links.append({'ref' : ref, 'href' : href, 'title' : title})
+    def addLink(self, link):       
+        self.links.append(link)
 
 def createOutput(status, value, datatype, format='')        :
     return {"status" : status, "value" : value, "datatype" : datatype, 'format' : format}  
