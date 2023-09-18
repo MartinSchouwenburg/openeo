@@ -1,7 +1,5 @@
 import os
-import pystac
 import json
-import uuid 
 from flask import Flask, jsonify, request
 from flask_restful import Api, Resource
 ##from globals import openeoip_config
@@ -12,12 +10,18 @@ from pathlib import Path
 import pickle
 import glob
 from userinfo import UserInfo
+from rasterdata import RasterData
 
 class OpenEOIPCollections(Resource):
     def get(self):
         ##request_json = request.get_json()
         return jsonify(loadCollections()) 
     
+
+def processMetaFile(filename):
+    
+
+    return []
 
 def loadCollections():
     user = UserInfo(request)
@@ -30,39 +34,45 @@ def loadCollections():
        
     allJson = {}
     allCollections = []
-    home = Path.home()
-    loc = globalsSingleton.openeoip_config['data_locations']['cache_location']
-    cacheFolder = os.path.join(home, loc['location'])
-    if ( not os.path.exists(cacheFolder)):
-        os.makedirs(cacheFolder)
 
     for location in data_locations:
         path = location["location"]
 
-        extraPath = os.path.join(path, 'metadata.json')
+        extraPath = os.path.join(path, 'extrametadata.json')
         extraMetadataAll = None
         if os.path.exists(extraPath):
             extraMd = open(extraPath)
             extraMetadataAll = json.load(extraMd)  
         if os.path.isdir(path):    
             files = os.listdir(path)
+            
             for filename in files:
-                if filename != 'metadata.json':
+                collectionJsonDict = {}
+                if filename != 'extrametadata.json':
                     fullPath = os.path.join(path,  filename)
+                    if os.path.isdir(fullPath):
+                        continue 
+                    name = os.path.splitext(filename)[0]
+                    raster = globalsSingleton.id2Raster(name)
+                    if raster == None:
+                        try:
+                            raster = RasterData()                    
 
-                    collectionJsonDict = checkCache(cacheFolder, 'base_'+ filename, fullPath)
-                    if ( collectionJsonDict == {}):
-                        prod = Reader().open(fullPath)
-                        extraMetadata = None
-                        if filename in extraMetadataAll:
-                            extraMetadata = extraMetadataAll[filename]
-                            
-                        collectionJsonDict = createCollectionJson(prod, extraMetadata, fullPath)
-                        save2Cache(collectionJsonDict, fullPath, 'base_' + filename, cacheFolder)
-                    else:
-                        globalsSingleton.insertFileNameInDatabase(collectionJsonDict["id"], fullPath)
+                            if Path(fullPath).suffix == ".metadata":
+                                raster.fromMetadataFile(fullPath)
+                            else:    
+                                extraMetadata = None
+                                if filename in extraMetadataAll:
+                                    extraMetadata = extraMetadataAll[filename]
+                                raster.fromEoReader(fullPath) 
+                                   
+                        except Exception as ex:
+                           continue
 
-                    allCollections.append(collectionJsonDict)
+                    collectionJsonDict = raster.toShortDictDefinition()
+                       
+                    if collectionJsonDict != {}:
+                        allCollections.append(collectionJsonDict)
 
     allJson["collections"] = allCollections
     allJson["links"] = globalsSingleton.openeoip_config['links']
@@ -70,32 +80,6 @@ def loadCollections():
     globalsSingleton.saveIdDatabase() 
 
     return allJson    
-
-
-def save2Cache(collectionDict, fullPath, filename, cacheFolder):
-    modifiedData = int(os.path.getmtime(fullPath))
-    cacheName = filename + '_' + str(modifiedData) + '.cache'
-    cachePath = os.path.join(cacheFolder, cacheName)
-    cacheFile = open(cachePath, 'wb')
-    pickle.dump(collectionDict, cacheFile)
-    cacheFile.close()
-
-def checkCache(cacheFolder, filename, fullPath):
-        modifiedData = int(os.path.getmtime(fullPath))
-        cacheName = filename + '_' + str(modifiedData) + '.cache'
-        cachePath = os.path.join(cacheFolder, cacheName)
-        if ( os.path.exists(cachePath)):
-            with open(cachePath, 'rb') as f:
-                data = f.read()
-            collectionJsonDict = pickle.loads(data) 
-            return collectionJsonDict
-        else:
-            cacheName = filename + '_*' + '.cache'
-            cachePath = os.path.join(cacheFolder, cacheName)
-            oldfiles = glob.glob(cachePath)
-            for oldfilename in oldfiles:
-                os.remove(oldfilename)
-        return {}
          
 def createCollectionJson(product, extraMetadata, fullpath, id=None):
     stac_version = globalsSingleton.openeoip_config['stac_version']
