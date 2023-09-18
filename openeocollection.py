@@ -1,70 +1,29 @@
 import os
 import json
-from flask import Flask, jsonify
-from flask_restful import Api, Resource
+from flask import jsonify, make_response
+from flask_restful import Resource
 from globals import globalsSingleton
-from eoreader.reader import Reader
 from eoreader.bands import *
-from pathlib import Path
-from openeocollections import createCollectionJson
-from openeocollections import checkCache
-from openeocollections import save2Cache
 from openeocollections import loadCollections
+from rasterdata import RasterData
+from processmanager import makeBaseResponseDict
 
 class OpenEOIPCollection(Resource):
     def get(self, name):
-
-        filepath = globalsSingleton.id2filepath(name)
-        if filepath == '':
-            #no id table found; we have to a complete scan
-            loadCollections()
-            filepath = globalsSingleton.id2filepath(name)
-            # if no result then there is no file for this id
-            if filepath == '':
-                return { "error" : "internal error, id and filename dont match"}
-            
-        headpath = os.path.split(filepath)[0]
-        filename = os.path.split(filepath)[1]
-        extraPath = os.path.join(headpath, 'metadata.json')
-        extraMetadataAll = None
-        extraMetadata = None
-        if os.path.exists(extraPath):
-            extraMd = open(extraPath)
-            extraMetadataAll = json.load(extraMd)  
-            if filename in extraMetadataAll:
-                extraMetadata = extraMetadataAll[filename]
-
-        home = Path.home()
-        cacheFolder = os.path.join(home, 'Documents/openeo/cache')                
-        collectionJsonDict = checkCache(cacheFolder, 'detailed_'+ filename, filepath)
-        if ( collectionJsonDict == {}):
-            prod = Reader().open(filepath)
-            collectionJsonDict = createCollectionJson(prod, extraMetadata, filepath, name)
-       
-            collectionJsonDict['cube:dimensions'] = self.getDimensions(prod)
-            collectionJsonDict['summaries'] = { "constellation" : prod.stac.constellation,
-                                        "instruments" : self.getInstrument(prod.instrument)}
-            od = prod.get_orbit_direction()
-            clouds  = prod.get_cloud_cover()
-            collectionJsonDict['eo:cloud_cover'] = [0, clouds]
-            collectionJsonDict['proj:epsg'] = { 'min' : prod.stac.proj.epsg, 'max' : prod.stac.proj.epsg}
-            bands = prod.bands._band_map
-            gsds = set()
-            bandlist = []
-            for band in bands.items():
-                b = band[1]
-                if ( b != None):
-                    bandlist.append({ 'name' : b.name, 
-                                    'common_name' : b.common_name.value,
-                                    'center_wavelength' : b.center_wavelength,
-                                    "gsd" : b.gsd})
-                    gsds.add(b.gsd)
-
-            collectionJsonDict['eo:gsd'] = list(gsds)
-            collectionJsonDict['eo:bands'] = bandlist
-            save2Cache(collectionJsonDict, filepath, 'detailed_' + filename, cacheFolder)
-
-        return jsonify(collectionJsonDict)
+        try:
+            raster = globalsSingleton.id2Raster(name)
+            if raster == None:
+                #no id table found; we have to a complete scan
+                loadCollections()
+                raster = globalsSingleton.id2Raster(name)
+                # if no result then there is no file for this id
+                if raster == None:
+                    return { "error" : "internal error, id and filename dont match"}
+   
+            longDict = raster.toLongDictDefinition()
+            return make_response(jsonify(longDict),200)
+        except Exception as ex:
+            return make_response(makeBaseResponseDict(-1, 'error', 400, None, str(ex)),400)
         
     def getInstrument(self, value):
         str(type(value))
