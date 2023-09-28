@@ -4,6 +4,7 @@ from pathlib import Path
 import pickle
 from operations.registerOperations import initOperationMetadata 
 from constants import constants
+import datetime
 
 def getOperation(operationName)        :
     if  operationName in globalsSingleton.operations:
@@ -29,8 +30,6 @@ class Globals :
       
 
     def insertRasterInDatabase(self, raster):
-        if raster.id in self.internal_database:
-            return
         self.internal_database[raster.id] = raster
 
     def filepath2raster(self, filename):
@@ -51,8 +50,8 @@ class Globals :
             p = item[0]
             if p == id:
                 raster = item[1]
-                mttime = os.path.getmtime(raster.dataSource)
-                if str(mttime) == raster.lastmodified:
+                mttime = datetime.datetime.fromtimestamp(os.path.getmtime(raster.dataSource))
+                if mttime == raster.lastmodified:
                     return raster
         return None        
     
