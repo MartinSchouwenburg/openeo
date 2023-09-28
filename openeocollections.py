@@ -4,11 +4,8 @@ from flask import Flask, jsonify, request
 from flask_restful import Api, Resource
 ##from globals import openeoip_config
 from globals import globalsSingleton
-from eoreader.reader import Reader
 from eoreader.bands import *
 from pathlib import Path
-import pickle
-import glob
 from userinfo import UserInfo
 from rasterdata import RasterData
 
@@ -60,11 +57,15 @@ def loadCollections():
 
                             if Path(fullPath).suffix == ".metadata":
                                 raster.fromMetadataFile(fullPath)
+
                             else:    
                                 extraMetadata = None
                                 if filename in extraMetadataAll:
                                     extraMetadata = extraMetadataAll[filename]
-                                raster.fromEoReader(fullPath) 
+                                raster.fromEoReader(fullPath)
+
+                            if raster.id != None:
+                                globalsSingleton.insertRasterInDatabase(raster) 
                                    
                         except Exception as ex:
                            continue
