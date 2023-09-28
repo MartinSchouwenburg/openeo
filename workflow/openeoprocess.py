@@ -7,7 +7,6 @@ import uuid
 from multiprocessing import Pipe
 import json
 
-
 def get(key,values,  defaultValue):
     if key in values:
         return values[key]
@@ -187,9 +186,10 @@ class OpenEOProcess(multiprocessing.Process):
             outputinfo = self.workflow.run(str(self.job_id), toServer, self.fromServer)
             self.sendTo.close()
             self.fromServer.close()
-            self.status = outputinfo['status']            
-            if outputinfo['status'] == constants.STATUSSTOPPED:
-                self.cleanup()
+            if outputinfo != None:
+                self.status = outputinfo['status']            
+                if outputinfo['status'] == constants.STATUSSTOPPED:
+                    self.cleanup()
                 
 
     
