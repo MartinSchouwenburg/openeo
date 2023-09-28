@@ -3,6 +3,7 @@ from multiprocessing import Process, Queue
 from datetime import datetime
 from constants import constants
 
+
 def linkSection(begin, end):
         return {
                 "href" :  begin + "/" + end,
@@ -31,6 +32,7 @@ def ErrorResponse(id, code, message):
         return { "id" : id, "code" : code, "message" : message}
 
 def worker(openeoprocess, outputQueue):
+    openeoprocess.status = constants.STATUSRUNNING
     openeoprocess.run(outputQueue)
 
 class OutputInfo:
@@ -103,7 +105,7 @@ class ProcessManager:
                     
             return "Job isn't present in the system","JobNotFound"
                      
-    def stopJob(self, user, job_id):
+    def stopJob(self, job_id, user):
         with self.lockOutput:
             for key,value in self.outputs.items():
                 if value.eoprocess.user == user:
@@ -140,13 +142,13 @@ class ProcessManager:
         return None            
 
 
-    def allJobsMetadata4User(self, user, processid, baseurl):
+    def allJobsMetadata4User(self, user, job_id, baseurl):
         with self.lockOutput:
             processes = []   
             for key,value in self.outputs.items():
                 if value.eoprocess.user == user:
-                    if processid == None or ( processid == str(value.eoprocess.job_id)):
-                        dict = value.eoprocess.toDict( processid == None)
+                    if job_id == None or ( job_id == str(value.eoprocess.job_id)):
+                        dict = value.eoprocess.toDict( job_id == None)
                         dict['progress'] = value.progress
                         dict['updated'] = value.last_updated
                         dict['status'] = value.status
@@ -158,7 +160,11 @@ class ProcessManager:
                             "type" : "application/json"
                             }
                         processes.append(dict)
-            return processes                    
+            if job_id == None: ## case were a list of metadata is requested 
+                return processes 
+            if len(processes) == 1:                                       
+                return processes[0]  # case were only on job is queried   
+            return ''             
 
     def alllogs4job(self, user, jobid):
         with self.lockOutput:
@@ -192,6 +198,7 @@ class ProcessManager:
             if eoprocess != None:
                 p = Process(target=worker, args=(eoprocess,self.outputQueue))
                 self.createNewEmptyOutput(eoprocess)
+                self.outputs[str(eoprocess.job_id)].status = constants.STATUSRUNNING
                 p.start()
             if self.outputQueue.qsize() > 0:
                 item = self.outputQueue.get()
