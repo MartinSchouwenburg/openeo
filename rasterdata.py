@@ -2,7 +2,9 @@ import os
 import json
 from eoreader.reader import Reader
 from eoreader.bands import *
-from globals import globalsSingleton
+from datetime import datetime
+from dateutil import parser
+import ilwis
 
 def isPrimitive(obj):
     return not hasattr(obj, '__dict__')
@@ -17,9 +19,9 @@ class RasterData:
     def fromEoReader(self, filepath):
         extraMetadata = self.loadExtraMetadata(filepath)
         mttime = os.path.getmtime(filepath)
-        self.lastmodified = str(mttime)
+        self.lastmodified = datetime.datetime.fromtimestamp(mttime)
         prod = Reader().open(filepath)
-        self.stac_version = globalsSingleton.openeoip_config['stac_version']
+        self.stac_version = '1.0'
         self.type = 'File'
         namepath = os.path.splitext(filepath)[0]
         head, tail = os.path.split(namepath)
@@ -68,7 +70,7 @@ class RasterData:
         layer.dataSource = self.dataSource
         self.layers.append(layer)
 
-        globalsSingleton.insertRasterInDatabase(self)
+        
 
     def loadExtraMetadata(self, datapath)  :
         headpath = os.path.split(datapath)[0]
@@ -82,12 +84,46 @@ class RasterData:
             if filename in extraMetadataAll:
                 extraMetadata = extraMetadataAll[filename]
         return extraMetadata
-                    
+
+    def fromRasterCoverage(self, rc2, extraParams):
+        self.lastmodified = datetime.now()
+        self.stac_version = "1.2"
+        self.type = 'file' 
+        self.id = rc2.ilwisID()
+        self.title = rc2.name()
+        self.description = "internally generated"
+        self.license = "none"            
+        self.keywords = "raster"
+        self.providers = "internal"
+        self.links = ''
+        ext = str(rc2.envelope())
+        csyLL = ilwis.CoordinateSystem("epsg:4326")
+        env = csyLL.convertEnvelope(rc2.coordinateSystem(), rc2.envelope())
+        self.boundingbox = str(env)
+        epsg = extraParams['epsg']
+        self.epsg = epsg
+        self.temporalExtent = extraParams['temporalExtent']
+        parts = ext.split()
+        self.spatialExtent = [float(parts[0]), float(parts[1]), float(parts[2]), float(parts[3])]
+        url = rc2.url()
+        path = url.split('//')
+        head = os.path.dirname(path[1])
+        self.dataSource = path[1]
+        self.dataFolder = head
+        self.bands = extraParams['bands']
+        self.layers = []
+        lyr = RasterLayer()
+        lyr.temporalExtent = self.temporalExtent
+        lyr.dataSource = self.dataSource
+        lyr.index = 0
+        self.layers.append(lyr)
+  
+
     def fromMetadataFile(self, filepath):
         metafile = open(filepath)
         metadata = json.load(metafile)
         mttime = os.path.getmtime(filepath)
-        self.lastmodified = str(mttime)
+        self.lastmodified = datetime.datetime.fromtimestamp(mttime)
         self.stac_version = self.getMandatoryValue("stac_version", metadata) 
         self.type = 'Collection' 
         self.id = self.getMandatoryValue("id", metadata) 
@@ -117,12 +153,10 @@ class RasterData:
         self.layers = []
         for b in range(1, len(temporal)):
             lyr = RasterLayer()
-            lyr.fromMetadata(temporal[b], len(self.bands))
+            lyr.fromMetadata(temporal[b], len(self.layers))
             self.layers.append(lyr)
         if 'summaries' in metadata:
             self.summaries = metadata['summaries']            
-
-        globalsSingleton.insertRasterInDatabase(self)
 
     def toShortDictDefinition(self):
         toplvl_dict = {}
@@ -235,3 +269,47 @@ class RasterData:
                 bandlist.append(b.name)
 
        return { 'x' : x, 'y' : y, 't' : t, 'bands' : { 'type' : 'bands', 'values' : bandlist}}
+    
+    def getBandIndexes(self, requestedBands):
+        idxs = []
+        for reqBandName in requestedBands:
+            for b in self.bands:
+                idx = 0 
+                if b['name'] == reqBandName:
+                    if 'index' in b:
+                        idxs.append(b['index'])
+                    else:                    
+                        idxs.append[idx]
+                idx = idx + 1
+        return idxs           
+
+    def getLayerIndexes(self, temporalExtent):
+            first = parser.parse(temporalExtent[0])
+            last = parser.parse(temporalExtent[1])
+            idx = 0
+            idxs = []
+            for layer in self.layers:
+                layerTempFirst = parser.parse(layer.temporalExtent[0])
+                layerTempLast = parser.parse(layer.temporalExtent[1])
+                if layerTempFirst >=  first and layerTempLast <= last:
+                    idxs.append(layer.index)
+
+            return idxs
+    
+    def index2bands(self, idxList):
+        bands = []
+        idxCount = 0
+        for idx in idxList:
+            for b in self.bands:
+               if b['index'] == int(idx):
+                   b['index'] = idxCount
+                   bands.append(b)
+                   idxCount = idxCount + 1
+        return bands                   
+                    
+
+    def idx2layer(self, index):
+        for layer in self.layers:
+            if layer.index == index:
+                return layer
+        return None            
