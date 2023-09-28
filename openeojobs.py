@@ -42,12 +42,8 @@ class OpenEOJobResults(Resource):
    def returnJobResultUrls(self, job_id, user, request_json):
        return ""
        
-   def queueJob(self, job_id, user, request_json):
+   def queueJob(self, job_id, user):
         try:
-            if not 'id' in request_json:
-                err = globalsSingleton.errorJson(constants.CUSTOMERROR, job_id, 'missing \'job_id\' key in definition')
-                return make_response(jsonify(err), err.code)
-            
             message, error = globalProcessManager.queueJob(user, job_id)
             if error == "":
                 return make_response(message, 202)
@@ -60,9 +56,8 @@ class OpenEOJobResults(Resource):
             return make_response(jsonify(err), err.code)      
        
    def post(self, job_id):
-        request_json = request.get_json()
         user = UserInfo(request)
-        return self.queueJob(user, job_id, user, request_json)  
+        return self.queueJob(job_id, user)  
 
    def get(self, job_id):
         request_json = request.get_json()
@@ -85,17 +80,17 @@ class OpenEOIJobByIdEstimate(Resource):
  
         
 class OpenEOMetadata4JobById(Resource):
-    def processGetJobId(self, user, job_id):
+    def processGetJobId(self, job_id, user):
         try:
-            jobs = globalProcessManager.allJobsMetadata4User(user, job_id,request.base_url)
-            return make_response(jsonify(jobs),200)
+            job = globalProcessManager.allJobsMetadata4User(user, job_id,request.base_url)
+            return make_response(jsonify(job),200)
         except Exception as ex:
             err = globalsSingleton.errorJson(constants.CUSTOMERROR, job_id, str(ex))
             return make_response(jsonify(err), err.code)  
         
     def processDeleteId(self, job_id, user):
         try:
-            globalProcessManager.stopJob(user, job_id)        
+            globalProcessManager.stopJob(job_id, user)        
             res = makeBaseResponseDict(job_id,'canceled', 204,request.base_url,'job has been successfully deleted' )
             return make_response(jsonify(res),204) 
         except Exception as ex:
