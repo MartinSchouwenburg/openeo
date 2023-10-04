@@ -2,7 +2,7 @@ import os
 import json
 from eoreader.reader import Reader
 from eoreader.bands import *
-from datetime import datetime
+from datetime import datetime, date
 from dateutil import parser
 import ilwis
 
@@ -102,21 +102,22 @@ class RasterData:
         self.boundingbox = str(env)
         epsg = extraParams['epsg']
         self.epsg = epsg
-        self.temporalExtent = extraParams['temporalExtent']
+        self.temporalExtent = self.getValue('temporalExtent', extraParams, [str(date.today()),str(date.today())])
         parts = ext.split()
         self.spatialExtent = [float(parts[0]), float(parts[1]), float(parts[2]), float(parts[3])]
         url = rc2.url()
         path = url.split('//')
         head = os.path.dirname(path[1])
-        self.dataSource = path[1]
+        self.dataSource = url
         self.dataFolder = head
-        self.bands = extraParams['bands']
+        self.bands = self.getValue('bands', extraParams, None)
         self.layers = []
         lyr = RasterLayer()
         lyr.temporalExtent = self.temporalExtent
         lyr.dataSource = self.dataSource
         lyr.index = 0
         self.layers.append(lyr)
+        self.ilwisRaster = rc2
   
 
     def fromMetadataFile(self, filepath):
@@ -296,17 +297,12 @@ class RasterData:
 
             return idxs
     
-    def index2bands(self, idxList):
-        bands = []
-        idxCount = 0
-        for idx in idxList:
-            for b in self.bands:
-               if b['index'] == int(idx):
-                   b['index'] = idxCount
-                   bands.append(b)
-                   idxCount = idxCount + 1
-        return bands                   
-                    
+    def index2band(self, idx):
+        for b in self.bands:
+            if b['index'] == int(idx):
+                b['index'] = 0
+                return b
+        return None                    
 
     def idx2layer(self, index):
         for layer in self.layers:
