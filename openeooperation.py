@@ -1,6 +1,8 @@
 import threading
 import json
 from constants import constants
+import ilwis
+from rasterdata import *
 
 
 operations1 = {}
@@ -49,8 +51,9 @@ class OpenEoOperation:
         self.description = jsondef['description']
         self.summary = jsondef['summary']
         self.categories = jsondef['categories']
-        for ex in jsondef['exceptions'].items():
-            self.exceptions[ex[0]] = ex[1]['message']
+        if 'exceptions'in jsondef:
+            for ex in jsondef['exceptions'].items():
+                self.exceptions[ex[0]] = ex[1]['message']
 
         for parm in jsondef['parameters']:
           self.addInputParameter(parm['name'], parm['description'], parm['schema'])
@@ -92,6 +95,107 @@ class OpenEoOperation:
 
     def addLink(self, link):       
         self.links.append(link)
+
+    def setArguments(self, graph, inputDict ):
+        isRoot = type(graph) is dict
+        if isRoot:
+             g = graph[next(iter(graph))]
+        else:
+             g = graph[1]   
+
+        newGraph= {}     
+        for graphItem in g.items():
+            if graphItem[0] in inputDict:
+                newGraph.update({ graphItem[0] :  inputDict[graphItem[0]]})
+
+            else :
+                if type(graphItem[1]) is dict:
+                    setItem = self.setArguments(graphItem, inputDict)
+                    if setItem != None:
+                        newGraph[graphItem[0]] = setItem
+                else:                     
+                    newGraph[graphItem[0]] = graphItem[1]
+
+        if isRoot: ## we are back at the root
+             newGraph.update(setItem)
+             d = {}
+             d[next(iter(graph))] = newGraph
+             return d
+        
+        return newGraph
+
+    def createOutput(self, idx, rasterList, extra):
+        rasterData = RasterData()
+        rasterData.fromRasterCoverage(rasterList, extra )
+        return rasterData
+
+    def copyToCollection(self, rasters):
+
+        rc = self.createNewRaster(rasters)
+
+        for index in range(0, len(rasters)):
+            iter = rasters[index].begin()
+            rc.addBand(index, iter)
+
+        return rc
+
+    def createNewRaster(self, rasters):
+        stackIndexes = []
+        for index in range(0, len(rasters)):
+            stackIndexes.append(index)
+
+        dataDefRaster = rasters[0].datadef()
+
+        for index in range(0, len(rasters)):
+            dfNum = rasters[index].datadef()
+            dataDefRaster = ilwis.DataDefinition.merge(dfNum, dataDefRaster)
+
+        grf = ilwis.GeoReference(rasters[0].coordinateSystem(), rasters[0].envelope() , rasters[0].size())
+        rc = ilwis.RasterCoverage()
+        rc.setGeoReference(grf) 
+        dom = ilwis.NumericDomain("code=integer")
+        rc.setStackDefinition(dom, stackIndexes)
+        rc.setDataDef(dataDefRaster)
+
+        for index in range(0, len(rasters)):
+            rc.setBandDefinition(index, rasters[index].datadef())
+
+        return rc            
+
+   
+     
+    def checkSpatialDimensions(self, rasters):
+        pixelSize = 0
+        allSame = True        
+        for rc in rasters:
+            if pixelSize == 0:
+                pixelSize = rc.ilwisRaster.geoReference().pixelSize()
+            else:
+                if allSame:
+                    allSame = pixelSize == rc.ilwisRaster.geoReference().pixelSize()
+        return allSame 
+
+    def setOutput(self, rasters, extra):
+        outputRasters = []
+        if len(rasters) > 0:
+            if self.rasterSizesEqual:
+                rasterList = self.copyToCollection(rasters)
+                outputRasters.append(self.createOutput(0, rasterList, extra))
+            else:
+                count = 0
+                for rc in self.rasters:
+                    outputRasters.append(self.createOutput(count, rc, extra))
+                    count = count + 1
+
+        return outputRasters 
+
+    def constructExtraParams(self, raster, temporalExtent, index):
+         bands = []
+         bands.append(raster.index2band(index))
+         extra = { 'temporalExtent' : temporalExtent, 'bands' : bands, 'epsg' : raster.epsg} 
+
+         return extra  
+
 
 def createOutput(status, value, datatype, format='')        :
     return {"status" : status, "value" : value, "datatype" : datatype, 'format' : format}  
