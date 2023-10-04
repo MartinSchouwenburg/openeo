@@ -35,7 +35,7 @@ class MeanOperation(OpenEoOperation):
 
     def run(self, job_id, processOutput, processInput):
         if self.runnable:
-            if hasattr(self, rasters):
+            if hasattr(self, 'rasters'):
                 rasters = []
                 for rc in self.rasters:
                     ilwRaster = rc.ilwisRaster
