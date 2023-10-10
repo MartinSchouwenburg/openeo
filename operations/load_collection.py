@@ -57,12 +57,14 @@ class LoadCollectionOperation(OpenEoOperation):
    
     def run(self, job_id, processOutput, processInput):
         if self.runnable:
+            self.logStartOperation(processOutput, job_id)
             outputRasters = []
             indexes = str(self.bandIdxs).lstrip('[').rstrip(']')
+            indexes = [int(ele) for ele in indexes.split(',')]
             ext = self.inputRaster.spatialExtent
             env = str(ext[0]) + " " + str(ext[2]) + "," + str(ext[1]) + " " +str(ext[3])
             for idx in indexes:
-                bandIdxList = 'rasterbands(' + idx + ')'
+                bandIdxList = 'rasterbands(' + str(idx) + ')'
                 rasters = []
                 for lyrIdx in self.lyrIdxs:
                     layer = self.inputRaster.idx2layer(lyrIdx)
@@ -75,7 +77,7 @@ class LoadCollectionOperation(OpenEoOperation):
                 extra = self.constructExtraParams(self.inputRaster, self.temporalExtent, idx)
                 outputRasters.extend(self.setOutput(rasters, extra))
 
-
+            ##self.logEndOperation(processOutput, job_id)
             return createOutput('finished', outputRasters, constants.DTRASTER)
         
         return createOutput('error', "operation not runnable", constants.DTERROR)
