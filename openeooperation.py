@@ -7,6 +7,11 @@ from rasterdata import *
 
 operations1 = {}
 
+
+def put2Queue(processOutput, content):
+    if processOutput != None: ##synchronous calls dont have output queues
+        processOutput.put(content)  
+
 def message_handler(operation, processInput):
 
     while True:
@@ -194,8 +199,18 @@ class OpenEoOperation:
          bands.append(raster.index2band(index))
          extra = { 'temporalExtent' : temporalExtent, 'bands' : bands, 'epsg' : raster.epsg} 
 
-         return extra  
+         return extra
+    
+    def logProgress(self, processOutput, job_id, message,  status):
+        timenow = str(datetime.now())
+        log = {'type' : 'progressevent', 'job_id': job_id, 'progress' : message , 'last_updated' : timenow, 'status' : status}   
+        put2Queue(processOutput, log)
+    
+    def logStartOperation(self, processOutput, job_id):
+        return self.logProgress(processOutput, job_id, self.name,constants.STATUSRUNNING)
 
+    def logEndOperation(self, processOutput, job_id):
+        return self.logProgress(processOutput, job_id, 'finished ' + self.name,constants.STATUSFINISHED) 
 
 def createOutput(status, value, datatype, format='')        :
     return {"status" : status, "value" : value, "datatype" : datatype, 'format' : format}  
@@ -204,9 +219,9 @@ def messageProgress(processOutput, job_id, progress) :
     if processOutput != None:
         processOutput.put({'type': 'progressevent','progress' : progress, 'job_id' : job_id, 'status' : constants.STATUSRUNNING}) 
 
-def put2Queue(processOutput, content):
-    if processOutput != None: ##synchronous calls dont have output queues
-        processOutput.put(content)        
+
+
+                
 
 
 
