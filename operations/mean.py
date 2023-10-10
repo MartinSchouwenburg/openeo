@@ -35,16 +35,16 @@ class MeanOperation(OpenEoOperation):
 
     def run(self, job_id, processOutput, processInput):
         if self.runnable:
+            self.logStartOperation(processOutput, job_id)
             if hasattr(self, 'rasters'):
-                rasters = []
+                outputRasters = []
                 for rc in self.rasters:
                     ilwRaster = rc.ilwisRaster
                     outputRc = ilwis.do("aggregaterasterstatistics", ilwRaster, "mean")
-                    rasters.append(outputRc)
+                    extra = self.constructExtraParams(rc, rc.temporalExtent, 0)
+                    outputRasters.extend(self.setOutput([outputRc], extra))
 
-                extra = self.constructExtraParams(self.rasters[0], self.rasters[0].temporalExtent, 0)
-                outputRasters =  self.setOutput(rasters, extra)
-        
+                ##self.logEndOperation(processOutput, job_id)
                 return createOutput('finished', outputRasters, constants.DTRASTER)
         
         return createOutput('error', "operation not runnable", constants.DTERROR)
