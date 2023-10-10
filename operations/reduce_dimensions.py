@@ -21,9 +21,13 @@ class ReduceDimensionsOperation(OpenEoOperation):
 
     def run(self, job_id, processOutput, processInput):
         if self.runnable:
+            self.logStartOperation(processOutput, job_id)
             outputInfo = self.reducerGraph.run(job_id, processOutput, processInput)
             if 'value' in outputInfo:
+                ##self.logEndOperation(processOutput, job_id)
                 return createOutput('finished', outputInfo['value'], constants.DTRASTER)
+            
+
         
         return createOutput('error', "operation no runnable", constants.DTERROR)
         
