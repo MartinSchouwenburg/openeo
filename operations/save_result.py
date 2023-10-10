@@ -20,13 +20,16 @@ class SaveResultOperation(OpenEoOperation):
 
     def run(self, job_id, processOutput, processInput):
         if self.runnable:
+            self.logStartOperation(processOutput, job_id)
             path = openeoip_config['data_locations']['root_user_data_location']
             path = path['location'] + '/' + str(job_id)    
             os.makedirs(path)
             for d in self.data:
-                raster = d.ilwisRaster
-                path = path + '/' + raster.name()
-                raster.store("file://" + path,self.format, "gdal")
+                name = d.ilwisRaster.name()
+                name = name.replace('_ANONYMOUS', 'raster')
+                outpath = path + '/' + name
+                d.ilwisRaster.store("file://" + outpath,self.format, "gdal")
+            self.logEndOperation(processOutput, job_id)                
             return createOutput('finished', None, constants.DTRASTER)
         
         return createOutput('error', "operation no runnable", constants.DTERROR)
