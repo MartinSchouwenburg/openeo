@@ -4,16 +4,16 @@ from constants import constants
 from rasterdata import RasterData
 from aggregatestatsBase import AggregateStatsBase
 
-class MeanOperation(AggregateStatsBase):
+class MedianOperation(AggregateStatsBase):
     def __init__(self):
-        self.loadOpenEoJsonDef('mean.json')
+        self.loadOpenEoJsonDef('median.json')
       
         self.kind = constants.PDPREDEFINED
 
     def prepare(self, arguments):
         try:
             self.base_prepare(arguments)
-            self.method = 'mean'
+            self.method = 'median'
             self.runnable = True
 
         except Exception as ex:
@@ -25,4 +25,4 @@ class MeanOperation(AggregateStatsBase):
         return self.base_run(job_id, processOutput, processInput)
 
 def registerOperation():
-     return MeanOperation()
+     return MedianOperation()
