@@ -40,6 +40,7 @@ class OpenEOIPJobs(Resource):
           
 class OpenEOJobResults(Resource):
    def returnJobResultUrls(self, job_id, user, request_json):
+       eoprocess = globalProcessManager.allJobsMetadata4User(user, job_id, request.base_url)
        return ""
        
    def queueJob(self, job_id, user):
@@ -80,8 +81,9 @@ class OpenEOIJobByIdEstimate(Resource):
  
         
 class OpenEOMetadata4JobById(Resource):
-    def processGetJobId(self, job_id, user):
+    def processGetJobId(self, job_id, request):
         try:
+            user = UserInfo(request)
             job = globalProcessManager.allJobsMetadata4User(user, job_id,request.base_url)
             return make_response(jsonify(job),200)
         except Exception as ex:
@@ -115,8 +117,7 @@ class OpenEOMetadata4JobById(Resource):
 
 
     def get(self, job_id):
-        user = UserInfo(request)
-        return self.processGetJobId(job_id, user)
+        return self.processGetJobId(job_id, request)
 
     def delete(self, job_id):
         user = UserInfo(request)
