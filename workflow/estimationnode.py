@@ -1,21 +1,17 @@
-from worklfownode import WorkflowNode
 from constants import *
 from openeooperation import * 
 import copy
 import datetime
 
 class EstimationNode:
-    def __init__(self, node, workflow):
-        self.workflowNode = node
-        self.workflow = workflow
+    def __init__(self, node, processGraph):
+        self.processNode = node
+        self.processGraph = processGraph
         self.estimationInfo = { 'costs' : 0, 'duration' : 0, 'size' : 0, 'expires' : datetime.datetime(2100,1,1), "downloads_included" : ""}
 
     def estimate(self):
-        if self.workflowNode != None:
-            if self.workflowNode[1].nodeType == WorkflowNode.CONDITION:
-                self.merge(self.estimateTest())
-            elif self.workflowNode[1].nodeType == WorkflowNode.OPERATION:
-                return self.estimateOperation()
+        if self.processNode != None:
+            return self.estimateOperation()
         return self.estimationInfo
     
     def merge(self, estimatiomInfo):
@@ -36,21 +32,21 @@ class EstimationNode:
         return self.noEstimate()
     
     def estimateOperation(self):
-        wfNode = self.workflowNode[1]
+        wfNode = self.processNode[1]
         for arg in wfNode.estimationValues.items():
             if ( wfNode.estimationValues[arg[0]] == None): # not calculated yet
                 fromNodeId = arg[1]['from_node']
-                backNode = self.workflow.id2Node(fromNodeId)
-                exNode = EstimationNode(backNode,self.workflow)
+                backNode = self.processGraph.id2Node(fromNodeId)
+                exNode = EstimationNode(backNode,self.processGraph)
                 estimate = exNode.estimate()
                 if estimate[0] == False:
                     return self.noEstimate();
             
-                self.workflowNode[1].estimationValues[arg[0]] = estimate[1]                
+                self.processNode[1].estimationValues[arg[0]] = estimate[1]                
                 self.merge(estimate[2])
 
-        processNode = self.workflowNode[1]
-        processObj = self.workflow.getOperation(processNode.process_id)
+        processNode = self.processNode[1]
+        processObj = self.processGraph.getOperation(processNode.process_id)
         executeObj =  copy.deepcopy(processObj)
         if hasattr(executeObj, 'estimate'):
             estimate = executeObj.estimate(processNode.estimationValues, processNode.argumentValues)

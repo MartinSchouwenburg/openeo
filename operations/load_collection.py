@@ -17,7 +17,7 @@ class LoadCollectionOperation(OpenEoOperation):
     def prepare(self, arguments):
         try:
             self.runnable = False            
-            self.inputRaster = getRasterDataSets()[arguments['id']]
+            self.inputRaster = getRasterDataSets()[arguments['id']['resolved']]
             if self.inputRaster == None:
                 return "NotFound"
             
@@ -31,17 +31,17 @@ class LoadCollectionOperation(OpenEoOperation):
 
             
             if 'bands'in arguments :
-                if arguments['bands'] != None:
-                    self.bandIdxs = self.inputRaster.getBandIndexes(arguments['bands'])
+                if arguments['bands']['resolved'] != None:
+                    self.bandIdxs = self.inputRaster.getBandIndexes(arguments['bands']['resolved'])
                 else:
                     self.bandIdxs.append(0)
             else:
                 self.bandIdxs.append(0)
 
             if 'temporal_extent' in arguments:
-                self.temporalExtent = arguments['temporal_extent']
-                if arguments['temporal_extent'] != None:
-                    self.lyrIdxs = self.inputRaster.getLayerIndexes(arguments['temporal_extent'])
+                self.temporalExtent = arguments['temporal_extent']['resolved']
+                if arguments['temporal_extent']['resolved'] != None:
+                    self.lyrIdxs = self.inputRaster.getLayerIndexes(arguments['temporal_extent']['resolved'])
                 else:
                     self.lyrIdxs.append(0)                
 

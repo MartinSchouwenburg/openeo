@@ -13,8 +13,8 @@ class OpenEOIPResult(Resource):
         try:
             process = OpenEOProcess(user, request_json,0)
 
-            if process.workflow != None:
-                outputInfo = process.workflow.run(process.job_id, None, None)
+            if process.processGraph != None:
+                outputInfo = process.processGraph.run(process.job_id, None, None)
 
                 if outputInfo["status"]:
                     if outputInfo["datatype"] != DTRASTER:

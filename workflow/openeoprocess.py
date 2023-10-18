@@ -1,4 +1,4 @@
-from workflow import workflow
+from processGraph import ProcessGraph
 from globals import getOperation
 from constants import constants
 import multiprocessing
@@ -69,10 +69,11 @@ class OpenEOProcess(multiprocessing.Process):
         self.log_level = get('log_level', request_json, 'all')        
         self.user = user
         processValues = request_json['process']
-        self.workflow = None
+        self.processGraph = None
 
         if 'process_graph' in processValues:
-            self.workflow = workflow.Workflow(get('process_graph', processValues, None), getOperation)
+
+            self.processGraph = ProcessGraph(get('process_graph', processValues, None), None, getOperation)
         else:
             raise Exception("missing \'process_graph\' key in definition")  
 
@@ -125,7 +126,7 @@ class OpenEOProcess(multiprocessing.Process):
 
     def validate(self):
         errorsdict = []
-        errors = self.workflow.validateGraph()
+        errors = self.processGraph.validateGraph()
         for error in errors:
             errorsdict.append({ "id" : self.job_id, "code" : "missing operation", "message" : error})
             
@@ -137,7 +138,7 @@ class OpenEOProcess(multiprocessing.Process):
         return dict
 
     def estimate(self, user):
-        return self.workflow.estimate()
+        return self.processGraph.estimate()
 
     def toDict(self, short=True):
         dictForm = {}
@@ -166,7 +167,7 @@ class OpenEOProcess(multiprocessing.Process):
                 processDict['examples'] = self.examples 
             if len(self.links) > 0:
                 processDict['links'] = self.examples                 
-            processDict['process_graph'] = self.workflow.sourceGraph
+            processDict['process_graph'] = self.processGraph.sourceGraph
             dictForm['process'] = processDict
             dictForm['log_level'] = self.log_level
 
@@ -182,8 +183,8 @@ class OpenEOProcess(multiprocessing.Process):
         self.sendTo.send(message)
 
     def run(self, toServer):
-        if self.workflow != None:
-            outputinfo = self.workflow.run(str(self.job_id), toServer, self.fromServer)
+        if self.processGraph != None:
+            outputinfo = self.processGraph.run(str(self.job_id), toServer, self.fromServer)
             self.sendTo.close()
             self.fromServer.close()
             if outputinfo != None:

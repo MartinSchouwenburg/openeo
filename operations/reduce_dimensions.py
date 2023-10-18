@@ -1,7 +1,7 @@
 from openeooperation import *
 from operationconstants import *
 from constants import constants
-from workflow import workflow
+from workflow import processGraph
 from globals import getOperation
 
 class ReduceDimensionsOperation(OpenEoOperation):
@@ -14,7 +14,7 @@ class ReduceDimensionsOperation(OpenEoOperation):
         self.runnable = False
         g = arguments['reducer']['process_graph']
         args = self.setArguments(g, {'data' : arguments['data']})
-        self.reducerGraph = workflow.Workflow(args, getOperation)
+        self.reducerGraph = None ##workflow.Workflow(args, getOperation)
         self.runnable = True
         return ""
               

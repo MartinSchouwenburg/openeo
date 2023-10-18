@@ -1,5 +1,5 @@
 from pathlib import Path
-from workflow import workflow
+from workflow import processGraph
 import os
 import importlib
 import json
@@ -49,7 +49,7 @@ def initOperationMetadata(getOperation):
             modifiedDate = int(os.path.getmtime(udfpath))
             data = json.load(f)
             processValues = data['process']
-            wf = workflow.Workflow(processValues['process_graph'], getOperation)
+            wf = processGraph.ProcessGraph(processValues['process_graph'], None, getOperation)
             operationsMetaData[processValues['id']] = wf
             deltaWatch[filename] = modifiedDate
         

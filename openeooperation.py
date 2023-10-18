@@ -109,7 +109,7 @@ class OpenEoOperation:
              g = graph[1]   
 
         newGraph= {}     
-        for graphItem in g.items():
+        for graphItem in graph.items():
             if graphItem[0] in inputDict:
                 newGraph.update({ graphItem[0] :  inputDict[graphItem[0]]})
 
