@@ -12,9 +12,8 @@ class ReduceDimensionsOperation(OpenEoOperation):
 
     def prepare(self, arguments):
         self.runnable = False
-        g = arguments['reducer']['process_graph']
-        args = self.setArguments(g, {'data' : arguments['data']})
-        self.reducerGraph = None ##workflow.Workflow(args, getOperation)
+        self.reducer= arguments['reducer']
+        self.data = arguments['data']
         self.runnable = True
         return ""
               
@@ -22,13 +21,13 @@ class ReduceDimensionsOperation(OpenEoOperation):
     def run(self, job_id, processOutput, processInput):
         if self.runnable:
             self.logStartOperation(processOutput, job_id)
-            outputInfo = self.reducerGraph.run(job_id, processOutput, processInput)
-            if 'value' in outputInfo:
-                ##self.logEndOperation(processOutput, job_id)
-                return createOutput('finished', outputInfo['value'], constants.DTRASTER)
-            
-
-        
+            if self.reducer['resolved'] == None:
+                pgraph = self.reducer['process_graph']
+                args = self.data['base']
+                process = processGraph.ProcessGraph(pgraph, args, getOperation)
+                outputInfo = process.run(job_id, processOutput, processInput)
+            else:
+                return createOutput('finished', self.reducer['resolved'], constants.DTRASTER) 
         return createOutput('error', "operation no runnable", constants.DTERROR)
         
 def registerOperation():
