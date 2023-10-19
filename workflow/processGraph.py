@@ -139,16 +139,14 @@ class NodeExecution :
             ##arguments = self.processNode.argumentValues
             executeObj =  copy.deepcopy(processObj)
             message = executeObj.prepare(args)
-            if not executeObj.runnable:
+            if  executeObj.runnable:
+                try:                
+                    self.outputInfo = executeObj.run(job_id, toServer, fromServer) 
+                except Exception:
+                    return 'error'                    
+            else:                               
                 self.outputInfo =  createOutput(False, message, constants.DTERROR)
                 return False
-
-            try:
-                self.outputInfo = executeObj.run(job_id, toServer, fromServer) 
-
-            except Exception:
-                return 'aap'
-
         return ''
 
     def resolveNode(self, job_id, toServer, fromServer, parmKeyValue):
@@ -171,6 +169,7 @@ class NodeExecution :
             pgraph = parmKeyValue[1]['process_graph']
             args = self.processNode.localArguments
             process = ProcessGraph(pgraph, args, self.processGraph.getOperation)
-            return process.run(job_id, toServer, fromServer)
+            self.outputInfo = process.run(job_id, toServer, fromServer)
+            return self.outputInfo['value']
         else:
             return parmKeyValue[1]                                              
