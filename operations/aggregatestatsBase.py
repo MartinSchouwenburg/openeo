@@ -9,10 +9,11 @@ class AggregateStatsBase(OpenEoOperation):
     def base_prepare(self, arguments):
         try:
             self.runnable = False 
-            if type(arguments['data'][0]) is RasterData:
-                self.rasters = arguments['data']
-                if len(self.rasters) == 0:
-                    return 'invalid input. Number of rasters is 0'
+            inpData = arguments['data']['resolved']
+            if len(inpData) == 0:
+                return 'invalid input. Number of rasters is 0'            
+            if isinstance(inpData[0], RasterData):
+                self.rasters = inpData
 
                 for rc in self.rasters:
                     if not rc:
@@ -22,7 +23,7 @@ class AggregateStatsBase(OpenEoOperation):
     
                 self.rasterSizesEqual = self.checkSpatialDimensions(self.rasters)  
                 self.method = 'unknown'
-            if type(arguments['data']) is numpy.array: ## will this work, ftm no testable case
+            elif type(arguments['data']) is numpy.array: ## will this work, ftm no testable case
                 self.array = arguments['data']
                 self.aggFunc = numpy.mean
             
