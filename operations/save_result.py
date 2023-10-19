@@ -12,7 +12,7 @@ class SaveResultOperation(OpenEoOperation):
     def prepare(self, arguments):
         self.runnable = False
         self.format = arguments['format']
-        self.data = arguments['data']
+        self.data = arguments['data']['resolved']
         self.options = arguments['options']
         self.runnable = True
         return ""
