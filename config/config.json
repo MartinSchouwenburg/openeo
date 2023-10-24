@@ -11,11 +11,11 @@
             },
             "system_files" : {
                 "description" : "place were the system files are stored",
-                "location" : "Documents/openeo/properties"
+                "location" : "/home/mschouwen/Documents/openeo/properties"
             },            
             "udf_locations" : [{
                 "description": "testing udf locations", 
-                "location" : "Documents/openeo/udf"
+                "location" : "/home/mschouwen/Documents/openeo/udf"
             }]
             
     },
