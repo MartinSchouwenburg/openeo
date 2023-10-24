@@ -6,7 +6,7 @@ import os
 
 class OpenEODownloadFile(Resource):
     def get(self, filepath):
-        request_json = request.get_json()
+        ##request_json = request.get_json()
         user = UserInfo(request)
         loc = globalsSingleton.openeoip_config['data_locations']
         root = loc['root_user_data_location']
