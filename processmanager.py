@@ -2,7 +2,9 @@ import threading
 from multiprocessing import Process, Queue
 from datetime import datetime
 from constants import constants
-
+import common
+import pickle
+from pathlib import Path
 
 def linkSection(begin, end):
         return {
@@ -187,6 +189,8 @@ class ProcessManager:
         self.running = False
 
     def startProcesses(self):
+        self.loadProcessTables()
+        startTimer = datetime.now()            
         while self.running:
             eoprocess = None
             with self.lockProcessQue:
@@ -201,19 +205,54 @@ class ProcessManager:
                 self.outputs[str(eoprocess.job_id)].status = constants.STATUSRUNNING
                 p.start()
             if self.outputQueue.qsize() > 0:
-                item = self.outputQueue.get()
-                job_id = item['job_id']
-                if job_id in self.outputs:
-                    type = item['type']
-                    if type == 'progressevent':
-                        self.outputs[job_id].progress = item['progress']
-                        self.outputs[job_id].last_updated = str(datetime.now())
-                        self.outputs[job_id].status = item['status']
-                    if type == 'logginevent':
-                        del item['type']
-                        self.outputs[job_id].logs.append(item)
+                self.changeOutputStatus()
+            endTimer = datetime.now()
+            if (endTimer - startTimer).seconds > 120:
+                self.dumpProcessTables()
+                startTimer = endTimer
+
+    def loadProcessTables(self):
+        path = common.openeoip_config['data_locations']['system_files']['location']
+        path1 = Path(path + '/processqueue.bin')
+        if path1.is_file():
+            with open(path1, 'rb') as f:
+                self.processQueue = pickle.load(f)
+        path2 = Path(path + '/processoutputs.bin')
+        if path2.is_file() :
+             with open(path2, 'rb') as f:
+                dump = pickle.load(f)
+                for output in dump.items():
+                    if output[1].status == constants.STATUSFINISHED:
+                        self.outputs[output[1].eoprocess.job_id] = output[1]
+                    elif output[1].status == constants.STATUSQUEUED:
+                        self.processQueue.append(output[1].eoporocess)
+                    elif output[1].status == constants.STATUSRUNNING:
+                        self.processQueue.append(output[1].eoporocess)                        
 
 
+    def changeOutputStatus(self):
+        item = self.outputQueue.get()
+        job_id = item['job_id']
+        if job_id in self.outputs:
+            type = item['type']
+            if type == 'progressevent':
+                self.outputs[job_id].progress = item['progress']
+                self.outputs[job_id].last_updated = str(datetime.now())
+                self.outputs[job_id].status = item['status']
+            if type == 'logginevent':
+                del item['type']
+                self.outputs[job_id].logs.append(item)
+
+    def dumpProcessTables(self):
+        path = common.openeoip_config['data_locations']['system_files']['location']
+        if len(self.processQueue) > 0:
+            path1 = path + '/processqueue.bin'
+            with open(path1, 'wb') as f:
+                pickle.dump(self.processQueue, f)
+        if len(self.outputs) > 0:                
+            path2 = path + '/processoutputs.bin'
+            with open(path2, 'wb') as f:
+                pickle.dump(self.outputs, f)
 
 globalProcessManager  = ProcessManager()
 
