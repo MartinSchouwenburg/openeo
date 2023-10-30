@@ -53,11 +53,13 @@ class ProcessGraph(OpenEoOperation):
 
     def validateNode(self, node):
         errors = []
-        for arg in node.arguments.items():
-                if ( node.argumentValues[arg[0]] == None): # ninput from other node
-                    fromNodeId = arg[1]['from_node']
-                    backNode = self.id2Node(fromNodeId)
-                    errors = errors + self.validateNode(backNode[1])
+        for arg in node.localArguments.items():
+                if ( arg[1]['resolved'] == None): # ninput from other node
+                    base = arg[1]['base']
+                    if 'from_node' in base:
+                        fromNodeId = base['from_node']
+                        backNode = self.id2node(fromNodeId)
+                        errors = errors + self.validateNode(backNode[1])
                    
         processObj = self.getOperation(node.process_id)
         if processObj == None:
