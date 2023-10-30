@@ -15,6 +15,46 @@ class RasterLayer:
         self.dataSource = temporalMetadata['source']
         self.index = idx
 
+class RasterImplementation:
+    def __init__(self, rasterObject):
+        self.raster = rasterObject
+        
+    def rasterImp(self):
+        return self.raster
+    
+    def pixelSize(self):
+        return self.getRaster().geoReference().pixelSize()
+    
+    def dataType(self):
+        return self.getRaster().datadef().domain().ilwisType()
+    
+    def name(self):
+        return self.getRaster().name()
+    
+    def createNewRaster(self, rasters):
+        stackIndexes = []
+        for index in range(0, len(rasters)):
+            stackIndexes.append(index)
+
+        dataDefRaster = rasters[0].datadef()
+
+        for index in range(0, len(rasters)):
+            dfNum = rasters[index].datadef()
+            dataDefRaster = ilwis.DataDefinition.merge(dfNum, dataDefRaster)
+
+        grf = ilwis.GeoReference(rasters[0].coordinateSystem(), rasters[0].envelope() , rasters[0].size())
+        rc = ilwis.RasterCoverage()
+        rc.setGeoReference(grf) 
+        dom = ilwis.NumericDomain("code=integer")
+        rc.setStackDefinition(dom, stackIndexes)
+        rc.setDataDef(dataDefRaster)
+
+        for index in range(0, len(rasters)):
+            rc.setBandDefinition(index, rasters[index].datadef())
+
+        return rc  
+        
+
 class RasterData:
     def fromEoReader(self, filepath):
         extraMetadata = self.loadExtraMetadata(filepath)
@@ -117,7 +157,7 @@ class RasterData:
         lyr.dataSource = self.dataSource
         lyr.index = 0
         self.layers.append(lyr)
-        self.ilwisRaster = rc2
+        self.raster = RasterImplementation(rc2)
   
 
     def fromMetadataFile(self, filepath):
@@ -308,4 +348,7 @@ class RasterData:
         for layer in self.layers:
             if layer.index == index:
                 return layer
-        return None            
+        return None  
+
+    def getRaster(self):
+        return self.raster()
