@@ -43,10 +43,10 @@ class MultiplyOperation(OpenEoOperation):
                 p2 = self.b
                 outputRasters = []
                 if type(self.a) is RasterData:
-                    p1 = p1.ilwisRaster
+                    p1 = p1.raster()
                     extra = self.constructExtraParams(self.a, self.a.temporalExtent, 0)
                 if type(self.b) is RasterData:
-                    p2 = p2.ilwisRaster
+                    p2 = p2.raster()
                     extra = self.constructExtraParams(self.b, self.b.temporalExtent, 0)
 
                 outputRc = ilwis.do("mapcalc", '@1 * @1', p1,p2)
