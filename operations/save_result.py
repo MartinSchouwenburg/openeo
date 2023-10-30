@@ -26,10 +26,10 @@ class SaveResultOperation(OpenEoOperation):
             os.makedirs(path)
             if self.data != None:
                 for d in self.data:
-                    name = d.ilwisRaster.name()
+                    name = d.getRaster().name()
                     name = name.replace('_ANONYMOUS', 'raster')
                     outpath = path + '/' + name
-                    d.ilwisRaster.store("file://" + outpath,self.format, "gdal")
+                    d.getRaster().store("file://" + outpath,self.format, "gdal")
                 
                 self.logEndOperation(processOutput, job_id) 
 
