@@ -174,10 +174,10 @@ class OpenEoOperation:
         allSame = True        
         for rc in rasters:
             if pixelSize == 0:
-                pixelSize = rc.ilwisRaster.geoReference().pixelSize()
+                pixelSize = rc.pixelSize()
             else:
                 if allSame:
-                    allSame = pixelSize == rc.ilwisRaster.geoReference().pixelSize()
+                    allSame = pixelSize == rc.pixelSize()
         return allSame 
 
     def setOutput(self, rasters, extra):
