@@ -15,17 +15,21 @@ class FilterBands(OpenEoOperation):
             if len(self.inpData) == 0:
                 return 'invalid input. Number of rasters is 0'            
             if isinstance(self.inpData[0], RasterData):
-                requestedBands = arguments['bands']['resolved']
-                foundCount = 0
-                for item in self.inpData:
-                    for bandItem in item.bands:
-                        if bandItem['name'] in requestedBands:
-                            foundCount = foundCount + 1
-                if foundCount == len(requestedBands):
-                    self.bands = requestedBands                    
-                    self.runnable = True
-                else:
-                    return 'Band list doesn match available bands'                    
+                if 'bands' in arguments:
+                    requestedBands = arguments['bands']['resolved']
+                    foundCount = 0
+                    for item in self.inpData:
+                        for bandItem in item.bands:
+                            if bandItem['name'] in requestedBands:
+                                foundCount = foundCount + 1
+                    if foundCount == len(requestedBands):
+                        self.bands = requestedBands                    
+                        self.runnable = True
+                    else:
+                        return 'Band list doesn match available bands'
+                if 'wavelenghts' in arguments:
+                    requestedWavelengths = arguments['wavelengths']['resolved']
+                    
 
         except:
             return "error" 
@@ -35,8 +39,9 @@ class FilterBands(OpenEoOperation):
             outData = []
             for raster in self.inpData:
                     for bandItem in raster.bands:
-                        if bandItem['name'] in self.bands:
-                            outData.append(raster)
+                        if self.bands != None:
+                            if bandItem['name'] in self.bands:
+                                outData.append(raster)
 
             return createOutput('finished', outData, constants.DTRASTER)
         
