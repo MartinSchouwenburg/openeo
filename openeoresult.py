@@ -9,6 +9,7 @@ from zipfile import ZipFile
 import os
 from werkzeug.wsgi import FileWrapper
 import pathlib
+import datetime
 
 def getMimeType(filename):
     try:
@@ -30,7 +31,10 @@ class OpenEOIPResult(Resource):
         user = UserInfo(request)
         try:
             process = OpenEOProcess(user, request_json,0)
-
+            errors =  process.validate()
+            if len(errors) > 0:
+                raise Exception(str(errors))
+            
             if process.processGraph != None:
                 outputInfo = process.processGraph.run(process.job_id, None, None)
 
@@ -46,9 +50,12 @@ class OpenEOIPResult(Resource):
                                                 direct_passthrough=True)
                         else:   
                             stream = BytesIO()
-                            with ZipFile(stream, 'w') as zf:                                                         
+                            now = datetime.datetime.now()
+                            date_string = now.strftime("%Y%m%d%H%M%S")
+                            date_int = int(date_string)
+                            with ZipFile(stream, 'a') as zf:                                                         
                                 for fn in outputInfo["value"]:
-                                    zf.write(file, os.path.basename(file))
+                                    zf.write(fn, os.path.basename(str(date_int) + ".zip"))
                                 stream.seek(0)
                                 w = FileWrapper(stream)
                                 response = Response(w,
