@@ -31,7 +31,11 @@ def initOperationMetadata(getOperation):
 
         if hasattr(module, 'registerOperation'):
             opObject = module.registerOperation()
-            operationsMetaData[opObject.name] = opObject
+            if isinstance(opObject, list):
+                for func in opObject:
+                   operationsMetaData[func.name] = func 
+            else:                   
+                operationsMetaData[opObject.name] = opObject
             deltaWatch[filename] = modifiedDate
 
     # udf files
