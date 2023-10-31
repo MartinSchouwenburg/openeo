@@ -351,4 +351,4 @@ class RasterData:
         return None  
 
     def getRaster(self):
-        return self.raster()
+        return self.raster
