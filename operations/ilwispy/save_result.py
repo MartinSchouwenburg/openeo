@@ -29,7 +29,7 @@ class SaveResultOperation(OpenEoOperation):
                     name = d.getRaster().name()
                     name = name.replace('_ANONYMOUS', 'raster')
                     outpath = path + '/' + name
-                    d.getRaster().store("file://" + outpath,self.format, "gdal")
+                    d.getRaster().rasterImp().store("file://" + outpath,self.format, "gdal")
                 
                 self.logEndOperation(processOutput, job_id) 
 
