@@ -5,6 +5,7 @@ pp = os.getcwd()
 sys.path.append(pp + '/workflow')
 sys.path.append(pp + '/constants')
 sys.path.append(pp + '/operations')
+sys.path.append(pp + '/operations/ilwispy')
 sys.path.append(pp)
 
 from flask import Flask, jsonify, make_response

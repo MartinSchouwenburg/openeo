@@ -3,7 +3,7 @@ from operationconstants import *
 from constants import constants
 import math
 
-class mapCalcBase1(OpenEoOperation):
+class BaseUnarymapCalc(OpenEoOperation):
     def base_prepare(self, arguments, oper):
         try:
             self.runnable = False
@@ -49,7 +49,7 @@ class mapCalcBase1(OpenEoOperation):
             
         return createOutput('error', "operation no runnable", constants.DTERROR)
     
-class mapCalcBase2(OpenEoOperation):
+class BaseBinarymapCalcBase(OpenEoOperation):
     def base_prepare(self, arguments, oper):
         try:
             self.runnable = False

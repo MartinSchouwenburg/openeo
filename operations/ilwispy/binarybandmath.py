@@ -1,6 +1,6 @@
-from mapCalcBase import mapCalcBase2
+from operations.ilwispy.BaseMapCalc import BaseBinarymapCalcBase
 
-class AddOperation(mapCalcBase2):
+class AddOperation(BaseBinarymapCalcBase):
     def __init__(self):
         self.loadOpenEoJsonDef('add.json')
 
@@ -11,7 +11,7 @@ class AddOperation(mapCalcBase2):
     def run(self, job_id, processOutput, processInput):
         return self.base_run(job_id, processOutput, processInput)
 
-class DivideOperation(mapCalcBase2):
+class DivideOperation(BaseBinarymapCalcBase):
     def __init__(self):
         self.loadOpenEoJsonDef('divide.json')
 
@@ -22,7 +22,7 @@ class DivideOperation(mapCalcBase2):
     def run(self, job_id, processOutput, processInput):
         return self.base_run(job_id, processOutput, processInput)
     
-class MultiplyOperation(mapCalcBase2):
+class MultiplyOperation(BaseBinarymapCalcBase):
     def __init__(self):
         self.loadOpenEoJsonDef('multiply.json')
 
@@ -33,7 +33,7 @@ class MultiplyOperation(mapCalcBase2):
     def run(self, job_id, processOutput, processInput):
         return self.base_run(job_id, processOutput, processInput) 
      
-class SubtractOperation(mapCalcBase2):
+class SubtractOperation(BaseBinarymapCalcBase):
     def __init__(self):
         self.loadOpenEoJsonDef('subtract.json')
 

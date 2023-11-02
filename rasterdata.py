@@ -19,17 +19,22 @@ class RasterImplementation:
     def __init__(self, rasterObject):
         self.raster = rasterObject
         
+    def isValid(self):
+        if self.raster:
+            return self.raster == True
+        return False
+    
     def rasterImp(self):
         return self.raster
     
     def pixelSize(self):
-        return self.getRaster().geoReference().pixelSize()
+        return self.raster.geoReference().pixelSize()
     
     def dataType(self):
-        return self.getRaster().datadef().domain().ilwisType()
+        return self.raster.datadef().domain().ilwisType()
     
     def name(self):
-        return self.getRaster().name()
+        return self.raster.name()
     
     def createNewRaster(self, rasters):
         stackIndexes = []
@@ -349,6 +354,12 @@ class RasterData:
             if layer.index == index:
                 return layer
         return None  
-
+    
+    def isValid(self):
+        okay = True
+        if self.raster:
+            okay = okay and self.raster.isValid()
+        return okay
+                
     def getRaster(self):
         return self.raster

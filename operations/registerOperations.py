@@ -7,38 +7,14 @@ import json
 def initOperationMetadata(getOperation):
 
 # Specify the subdirectory path
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    
-    # Get a list of all Python files in the subdirectory
-    file_names = [f for f in os.listdir(current_dir) if f.endswith('.py')]
-    subdirectory = 'operations'
-    # Iterate over the file names
     operationsMetaData = {}
-    deltaWatch = {}
-    for filename in file_names:
-        # Remove the file extension to get the module name
-        fullPath = os.path.join(current_dir,  filename)
-        modifiedDate = int(os.path.getmtime(fullPath))
-        if filename in deltaWatch:
-            if modifiedDate == deltaWatch[filename]:
-                continue
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    subfolders = [ f.path for f in os.scandir(current_dir) if f.is_dir() ]
+    for folder in subfolders:
+        operationsMetaData = loadOperationsFolder(folder, operationsMetaData)                   
 
-        module_name = filename[:-3]
-
-        # Import the module dynamically
-        module = importlib.import_module(f'{subdirectory}.{module_name}', package=__package__)
-        
-
-        if hasattr(module, 'registerOperation'):
-            opObject = module.registerOperation()
-            if isinstance(opObject, list):
-                for func in opObject:
-                   operationsMetaData[func.name] = func 
-            else:                   
-                operationsMetaData[opObject.name] = opObject
-            deltaWatch[filename] = modifiedDate
-
-    # udf files
+    operationsMetaData = loadOperationsFolder(current_dir,operationsMetaData)
+  
     home = Path.home()
     openeoip_configfile = open('./config/config.json')
     openeoip_config = json.load(openeoip_configfile)
@@ -50,13 +26,36 @@ def initOperationMetadata(getOperation):
         for filename in file_names:
             udfpath = os.path.join(udfFolder, filename)        
             f = open(udfpath)
-            modifiedDate = int(os.path.getmtime(udfpath))
             data = json.load(f)
             processValues = data['process']
             wf = processGraph.ProcessGraph(processValues['process_graph'], None, getOperation)
             operationsMetaData[processValues['id']] = wf
-            deltaWatch[filename] = modifiedDate
-        
 
+    return operationsMetaData
+
+def loadOperationsFolder(folder,operationsMetaData):
+    file_names = [f for f in os.listdir(folder) if f.endswith('.py')]
+    if len(file_names) == 0:
+        return operationsMetaData
+    
+    parts = folder.split(os.sep)
+    foldername = parts[-1]
+    subdirectory = foldername
+    for filename in file_names:
+        module_name = filename[:-3]
+
+            # Import the module dynamically
+        try:
+            module = importlib.import_module(f'{subdirectory}.{module_name}', package=__package__)
+           
+            if hasattr(module, 'registerOperation'): 
+                opObject = module.registerOperation()
+                if isinstance(opObject, list):
+                    for func in opObject:
+                        operationsMetaData[func.name] = func 
+                else:                   
+                    operationsMetaData[opObject.name] = opObject
+        except Exception as ex:
+            continue
 
     return operationsMetaData

@@ -1,19 +1,18 @@
 from openeooperation import *
 from operationconstants import *
 from constants import constants
-from rasterdata import RasterData
-from aggregatestatsBase import AggregateStatsBase
+from operations.ilwispy.BaseAggregatestats import BaseAggregateStats
 
-class SumOperation(AggregateStatsBase):
+class MaxOperation(BaseAggregateStats):
     def __init__(self):
-        self.loadOpenEoJsonDef('sum.json')
+        self.loadOpenEoJsonDef('max.json')
       
         self.kind = constants.PDPREDEFINED
 
     def prepare(self, arguments):
         try:
             self.base_prepare(arguments)
-            self.method = 'sum'
+            self.method = 'max'
             self.runnable = True
 
         except Exception as ex:
@@ -25,4 +24,4 @@ class SumOperation(AggregateStatsBase):
         return self.base_run(job_id, processOutput, processInput)
 
 def registerOperation():
-     return SumOperation()
+     return MaxOperation()

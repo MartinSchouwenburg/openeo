@@ -49,7 +49,7 @@ class OpenEoOperation:
             message_thread.start()
 
     def loadOpenEoJsonDef(self, filename):
-        jsondeffile = open('./operations/' + filename)
+        jsondeffile = open('./operations/metadata/' + filename)
         jsondef = json.load(jsondeffile)
 
         self.name = jsondef['id']

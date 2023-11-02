@@ -1,6 +1,6 @@
-from mapCalcBase import mapCalcBase1
+from operations.ilwispy.BaseMapCalc import BaseUnarymapCalc
 
-class ArcCosOperation(mapCalcBase1):
+class ArcCosOperation(BaseUnarymapCalc):
     def __init__(self):
         self.loadOpenEoJsonDef('arccos.json')
 
@@ -11,7 +11,7 @@ class ArcCosOperation(mapCalcBase1):
     def run(self, job_id, processOutput, processInput):
         return self.base_run(job_id, processOutput, processInput)
     
-class CosOperation(mapCalcBase1):
+class CosOperation(BaseUnarymapCalc):
     def __init__(self):
         self.loadOpenEoJsonDef('cos.json')
 
@@ -22,7 +22,7 @@ class CosOperation(mapCalcBase1):
     def run(self, job_id, processOutput, processInput):
         return self.base_run(job_id, processOutput, processInput)    
 
-class ASinOperation(mapCalcBase1):
+class ASinOperation(BaseUnarymapCalc):
     def __init__(self):
         self.loadOpenEoJsonDef('arcsin.json')
 
@@ -33,7 +33,7 @@ class ASinOperation(mapCalcBase1):
     def run(self, job_id, processOutput, processInput):
         return self.base_run(job_id, processOutput, processInput)
         
-class SinOperation(mapCalcBase1):
+class SinOperation(BaseUnarymapCalc):
     def __init__(self):
         self.loadOpenEoJsonDef('sin.json')
 
@@ -44,7 +44,7 @@ class SinOperation(mapCalcBase1):
     def run(self, job_id, processOutput, processInput):
         return self.base_run(job_id, processOutput, processInput)
 
-class TanOperation(mapCalcBase1):
+class TanOperation(BaseUnarymapCalc):
     def __init__(self):
         self.loadOpenEoJsonDef('tan.json')
 
@@ -55,7 +55,7 @@ class TanOperation(mapCalcBase1):
     def run(self, job_id, processOutput, processInput):
         return self.base_run(job_id, processOutput, processInput)
 
-class ATanOperation(mapCalcBase1):
+class ATanOperation(BaseUnarymapCalc):
     def __init__(self):
         self.loadOpenEoJsonDef('arctan.json')
 

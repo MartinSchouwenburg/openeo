@@ -5,7 +5,7 @@ from rasterdata import RasterData
 import ilwis
 import numpy
 
-class AggregateStatsBase(OpenEoOperation):
+class BaseAggregateStats(OpenEoOperation):
     def base_prepare(self, arguments):
         try:
             self.runnable = False 

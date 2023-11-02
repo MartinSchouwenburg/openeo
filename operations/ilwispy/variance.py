@@ -2,18 +2,18 @@ from openeooperation import *
 from operationconstants import *
 from constants import constants
 from rasterdata import RasterData
-from aggregatestatsBase import AggregateStatsBase
+from operations.ilwispy.BaseAggregatestats import BaseAggregateStats
 
-class MedianOperation(AggregateStatsBase):
+class VarianceOperation(BaseAggregateStats):
     def __init__(self):
-        self.loadOpenEoJsonDef('median.json')
+        self.loadOpenEoJsonDef('variance.json')
       
         self.kind = constants.PDPREDEFINED
 
     def prepare(self, arguments):
         try:
             self.base_prepare(arguments)
-            self.method = 'median'
+            self.method = 'variance'
             self.runnable = True
 
         except Exception as ex:
@@ -25,4 +25,4 @@ class MedianOperation(AggregateStatsBase):
         return self.base_run(job_id, processOutput, processInput)
 
 def registerOperation():
-     return MedianOperation()
+     return VarianceOperation()
