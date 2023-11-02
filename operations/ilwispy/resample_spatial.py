@@ -68,7 +68,6 @@ class ResampleSpatial(OpenEoOperation):
                            self.pixelSize, self.csy, True, '.')
 
             outputRc = ilwis.do("resample", self.inputRaster, grf, self.method)
-            print(outputRc.size())
             outputRasters = []                
             outputRasters.extend(self.setOutput([outputRc], self.extra))
             put2Queue(processOutput,{'progress' : 100, 'job_id' : job_id, 'status' : 'finished'}) 
