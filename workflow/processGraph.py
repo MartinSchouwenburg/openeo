@@ -38,7 +38,6 @@ class ProcessGraph(OpenEoOperation):
         self.processArguments = arguments
         self.localArguments = {}
         self.getOperation = getOperation
-        print(self.getOperation)
         self.startNode = None
         for processKey,processValues in source_graph.items():
             grNode = ProcessNode(self, processValues, processKey)
@@ -56,10 +55,11 @@ class ProcessGraph(OpenEoOperation):
         for arg in node.localArguments.items():
                 if ( arg[1]['resolved'] == None): # ninput from other node
                     base = arg[1]['base']
-                    if 'from_node' in base:
-                        fromNodeId = base['from_node']
-                        backNode = self.id2node(fromNodeId)
-                        errors = errors + self.validateNode(backNode[1])
+                    if isinstance(base, dict):
+                        if 'from_node' in base:
+                            fromNodeId = base['from_node']
+                            backNode = self.id2node(fromNodeId)
+                            errors = errors + self.validateNode(backNode[1])
                    
         processObj = self.getOperation(node.process_id)
         if processObj == None:
@@ -150,6 +150,40 @@ class NodeExecution :
                 self.outputInfo =  createOutput(False, message, constants.DTERROR)
                 return False
         return ''
+    
+    def mapcalc(self, args, pgraph):
+        if self.checkBandMath(pgraph):
+
+            flow = []
+            for processKey,processValues in pgraph.items():
+                node = {'id' : None, 'operation': None, 'referred_parm' : [], 'values' : []}
+                for pkey, pValue in processValues.items():
+                    if pkey == 'process_id':
+                        node['id'] = processKey
+                        node['operation'] = pValue
+                    elif pkey == 'arguments':
+                        for key, value in pValue.items():
+                            if key == 'data':
+                                if 'from_parameter' in value:
+                                    node['referred_parm'].append(value['from_parameter'])
+                            elif isinstance(value, dict) and 'from_node' in value:
+                                node['values'].append('@@'+ value['from_node'])
+                            else:
+                                node['values'].append(value)
+                flow.append(node)
+
+
+    def checkBandMath(self, pgraph):
+        bandmathOperation = True
+        bandmathOperations = [ 'multiply', 'subtract', 'divide', 'add']
+        for processKey,processValues in pgraph.items():
+            for key, pValue in processValues.items():
+                if key == 'process_id':
+                    if not pValue in bandmathOperations:
+                        if pValue != 'array_element':
+                            bandmathOperation = False 
+
+        return bandmathOperation                                                                                                                
 
     def resolveNode(self, job_id, toServer, fromServer, parmKeyValue):
         if 'from_node' in parmKeyValue:
@@ -170,6 +204,7 @@ class NodeExecution :
         elif 'reducer' in parmKeyValue:
             pgraph = parmKeyValue[1]['process_graph']
             args = self.processNode.localArguments
+            self.mapcalc(args,pgraph)
             process = ProcessGraph(pgraph, args, self.processGraph.getOperation)
             self.outputInfo = process.run(job_id, toServer, fromServer)
             return self.outputInfo['value']
