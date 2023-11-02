@@ -18,7 +18,7 @@ class BaseAggregateStats(OpenEoOperation):
                 for rc in self.rasters:
                     if not rc:
                         return 'invalid input. rasters are not valid'
-                    if rc.dataType() != ilwis.it.NUMERICDOMAIN:
+                    if rc.getRaster().dataType() != ilwis.it.NUMERICDOMAIN:
                         return 'invalid datatype in raster. Must be numeric'
     
                 self.rasterSizesEqual = self.checkSpatialDimensions(self.rasters)  
@@ -38,7 +38,7 @@ class BaseAggregateStats(OpenEoOperation):
             if hasattr(self, 'rasters'):
                 outputRasters = []
                 for rc in self.rasters:
-                    raster = rc.getRaster()
+                    raster = rc.getRaster().rasterImp()
                     outputRc = ilwis.do("aggregaterasterstatistics", raster,self.method)
                     extra = self.constructExtraParams(rc, rc.temporalExtent, 0)
                     outputRasters.extend(self.setOutput([outputRc], extra))
