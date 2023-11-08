@@ -169,7 +169,7 @@ class RasterData:
         metafile = open(filepath)
         metadata = json.load(metafile)
         mttime = os.path.getmtime(filepath)
-        self.lastmodified = datetime.datetime.fromtimestamp(mttime)
+        self.lastmodified = datetime.fromtimestamp(mttime)
         self.stac_version = self.getMandatoryValue("stac_version", metadata) 
         self.type = 'Collection' 
         self.id = self.getMandatoryValue("id", metadata) 
@@ -195,7 +195,7 @@ class RasterData:
         dataDir = os.path.join(head, metadata["data_folder"])  
         self.dataSource = filepath
         self.dataFolder = dataDir
-        self.bands = self.getMandatoryValue("bands", metadata)
+        self.bands = self.getMandatoryValue("bands", ext)
         self.layers = []
         for b in range(1, len(temporal)):
             lyr = RasterLayer()
