@@ -53,7 +53,7 @@ class ProcessGraph(OpenEoOperation):
     def validateNode(self, node):
         errors = []
         for arg in node.localArguments.items():
-                if ( arg[1]['resolved'] == None): # ninput from other node
+                if ( arg[1]['resolved'] == None): # input needed from other node
                     base = arg[1]['base']
                     if isinstance(base, dict):
                         if 'from_node' in base:
