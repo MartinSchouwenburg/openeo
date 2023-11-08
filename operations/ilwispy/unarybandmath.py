@@ -186,6 +186,39 @@ class LnOperation(BaseUnarymapCalc):
 
     def run(self, job_id, processOutput, processInput):
         return self.base_run(job_id, processOutput, processInput)                       
+    
+class PowerOperation(BaseUnarymapCalc):
+    def __init__(self):
+        self.loadOpenEoJsonDef('power.json')
+
+    def prepare(self, arguments):
+        self.base_prepare(arguments, 'pow')
+        return ""
+
+    def run(self, job_id, processOutput, processInput):
+        return self.base_run(job_id, processOutput, processInput)  
+
+class SqrtOperation(BaseUnarymapCalc):
+    def __init__(self):
+        self.loadOpenEoJsonDef('sqrt.json')
+
+    def prepare(self, arguments):
+        self.base_prepare(arguments, 'sqrt')
+        return ""
+
+    def run(self, job_id, processOutput, processInput):
+        return self.base_run(job_id, processOutput, processInput) 
+
+class ExpOperation(BaseUnarymapCalc):
+    def __init__(self):
+        self.loadOpenEoJsonDef('exp.json')
+
+    def prepare(self, arguments):
+        self.base_prepare(arguments, 'exp')
+        return ""
+
+    def run(self, job_id, processOutput, processInput):
+        return self.base_run(job_id, processOutput, processInput)           
 
 def registerOperation():
      funcs = []
@@ -205,5 +238,7 @@ def registerOperation():
      funcs.append(SinHOperation())      
      funcs.append(TanHOperation())
      funcs.append(LnOperation())             
+     funcs.append(PowerOperation())
+     funcs.append(SqrtOperation())     
 
      return funcs

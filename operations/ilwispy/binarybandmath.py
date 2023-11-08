@@ -49,7 +49,7 @@ class LogNOperation(BaseBinarymapCalcBase):
         self.loadOpenEoJsonDef('log.json')
 
     def prepare(self, arguments):
-        self.base_prepare(arguments, 'logn')
+        self.base_prepare(arguments, 'log')
         return ""
 
     def run(self, job_id, processOutput, processInput):
