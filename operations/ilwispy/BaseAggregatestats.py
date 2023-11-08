@@ -5,8 +5,8 @@ from rasterdata import RasterData
 import ilwis
 import numpy
 
-class BaseAggregateStats(OpenEoOperation):
-    def base_prepare(self, arguments):
+class BaseAggregateData(OpenEoOperation):
+    def base_prepareRaster(self, arguments):
         try:
             self.runnable = False 
             inpData = arguments['data']['resolved']
