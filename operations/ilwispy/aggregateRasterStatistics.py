@@ -1,7 +1,7 @@
 from constants import constants
-from operations.ilwispy.BaseAggregatestats import BaseAggregateStats
+from operations.ilwispy.BaseAggregatestats import BaseAggregateData
 
-class MaxOperation(BaseAggregateStats):
+class MaxOperation(BaseAggregateData):
     def __init__(self):
         self.loadOpenEoJsonDef('max.json')
       
@@ -9,8 +9,12 @@ class MaxOperation(BaseAggregateStats):
 
     def prepare(self, arguments):
         try:
-            self.base_prepare(arguments)
+            it = iter(arguments)
+            p1 = arguments[next(it)]['resolved']
             self.method = 'max'
+            if isinstance(p1, list):
+                self.base_prepareRaster(arguments)
+                self.method = 'max'
             self.runnable = True
 
         except Exception as ex:
@@ -21,7 +25,7 @@ class MaxOperation(BaseAggregateStats):
     def run(self, job_id, processOutput, processInput):
         return self.base_run(job_id, processOutput, processInput)
     
-class MeanOperation(BaseAggregateStats):
+class MeanOperation(BaseAggregateData):
     def __init__(self):
         self.loadOpenEoJsonDef('mean.json')
       
@@ -29,7 +33,7 @@ class MeanOperation(BaseAggregateStats):
 
     def prepare(self, arguments):
         try:
-            self.base_prepare(arguments)
+            self.base_prepareRaster(arguments)
             self.method = 'mean'
             self.runnable = True
 
@@ -41,7 +45,7 @@ class MeanOperation(BaseAggregateStats):
     def run(self, job_id, processOutput, processInput):
         return self.base_run(job_id, processOutput, processInput) 
 
-class MedianOperation(BaseAggregateStats):
+class MedianOperation(BaseAggregateData):
     def __init__(self):
         self.loadOpenEoJsonDef('median.json')
       
@@ -49,7 +53,7 @@ class MedianOperation(BaseAggregateStats):
 
     def prepare(self, arguments):
         try:
-            self.base_prepare(arguments)
+            self.base_prepareRaster(arguments)
             self.method = 'median'
             self.runnable = True
 
@@ -61,7 +65,7 @@ class MedianOperation(BaseAggregateStats):
     def run(self, job_id, processOutput, processInput):
         return self.base_run(job_id, processOutput, processInput) 
 
-class MinOperation(BaseAggregateStats):
+class MinOperation(BaseAggregateData):
     def __init__(self):
         self.loadOpenEoJsonDef('min.json')
       
@@ -69,7 +73,7 @@ class MinOperation(BaseAggregateStats):
 
     def prepare(self, arguments):
         try:
-            self.base_prepare(arguments)
+            self.base_prepareRaster(arguments)
             self.method = 'min'
             self.runnable = True
 
@@ -81,7 +85,7 @@ class MinOperation(BaseAggregateStats):
     def run(self, job_id, processOutput, processInput):
         return self.base_run(job_id, processOutput, processInput) 
 
-class SumOperation(BaseAggregateStats):
+class SumOperation(BaseAggregateData):
     def __init__(self):
         self.loadOpenEoJsonDef('sum.json')
       
@@ -89,7 +93,7 @@ class SumOperation(BaseAggregateStats):
 
     def prepare(self, arguments):
         try:
-            self.base_prepare(arguments)
+            self.base_prepareRaster(arguments)
             self.method = 'sum'
             self.runnable = True
 
@@ -100,7 +104,7 @@ class SumOperation(BaseAggregateStats):
 
     def run(self, job_id, processOutput, processInput):
         return self.base_run(job_id, processOutput, processInput)             
-class VarianceOperation(BaseAggregateStats):
+class VarianceOperation(BaseAggregateData):
     def __init__(self):
         self.loadOpenEoJsonDef('variance.json')
       
@@ -108,7 +112,7 @@ class VarianceOperation(BaseAggregateStats):
 
     def prepare(self, arguments):
         try:
-            self.base_prepare(arguments)
+            self.base_prepareRaster(arguments)
             self.method = 'variance'
             self.runnable = True
 
@@ -120,7 +124,7 @@ class VarianceOperation(BaseAggregateStats):
     def run(self, job_id, processOutput, processInput):
         return self.base_run(job_id, processOutput, processInput)
     
-class StandardDevOperation(BaseAggregateStats):
+class StandardDevOperation(BaseAggregateData):
     def __init__(self):
         self.loadOpenEoJsonDef('sd.json')
       
@@ -128,7 +132,7 @@ class StandardDevOperation(BaseAggregateStats):
 
     def prepare(self, arguments):
         try:
-            self.base_prepare(arguments)
+            self.base_prepareRaster(arguments)
             self.method = 'standarddev'
             self.runnable = True
 
