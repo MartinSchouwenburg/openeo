@@ -28,6 +28,8 @@ class BaseUnarymapCalc(OpenEoOperation):
                     return createOutput(False, "the parameter a is not a number", constants.DTERROR)
                 self.parmValue = p1                        
             self.operation = oper
+            if self.operation in ['pow']:
+                self.operation = 'power'
             self.runnable = True                                      
                 
         except Exception as ex:
@@ -42,11 +44,10 @@ class BaseUnarymapCalc(OpenEoOperation):
                 for item in self.parmValue:
                     oper = self.operation + '(@1)'
                     outputRc = ilwis.do('mapcalc', oper, item['raster'])
-
-                outputRasters.extend(self.setOutput([outputRc], item['extra']))
+                    outputRasters.extend(self.setOutput([outputRc], item['extra']))
                 out =  createOutput('finished', outputRasters, constants.DTRASTER)                
             else:
-                c = eval(self.operation + '(' + self.parmValue + ')')
+                c = eval('math.' + self.operation + '(' + self.parmValue + ')')
                 out = createOutput('finished', c, constants.DTNUMBER)
 
             put2Queue(processOutput,{'progress' : 100, 'job_id' : job_id, 'status' : 'finished'}) 
@@ -65,42 +66,78 @@ class BaseBinarymapCalcBase(OpenEoOperation):
             it = iter(arguments)
             self.p1 = arguments[next(it)]['resolved']
             self.p2 = arguments[next(it)]['resolved']
-            self.mapcalc = type(self.p1) is RasterData or type(self.p2) is RasterData
+            self.ismaps1 = isinstance(self.p1, list)## maps are always in lists; numbers not
+            self.ismaps2 = isinstance(self.p2, list)
 
-            if not type(self.p1) is RasterData:
+            if not self.ismaps1: 
                 if math.isnan(self.p1):
                     return createOutput(False, "the parameter a is not a number", constants.DTERROR)
-            if not type(self.p2) is RasterData:
+            if not self.ismaps2:
                 if math.isnan(self.p2):
                     return createOutput(False, "the parameter b is not a number", constants.DTERROR)                              
     
             self.runnable = True
 
-            if type(self.p1) is RasterData:
-                self.extra = self.constructExtraParams(self.p1, self.p1.temporalExtent, 0)
-                self.p1 = self.p1.getRaster().rasterImp()
-            if type(self.p2) is RasterData:
-                self.extra = self.constructExtraParams(self.p2, self.p2.temporalExtent, 0)                 
-                self.p2 = self.p2.getRaster().rasterImp()
+            if self.ismaps1:
+                self.rasters1 = self.extractRasters(self.p1)
+            if self.ismaps2 is RasterData:
+                self.rasters2 = self.extractRasters(self.p2)
+
             self.operation = oper                           
                 
         except Exception as ex:
             return ""
+
+    def extractRasters(self, rasters):
+        rasterImpls = []
+        for idx in range(len(rasters)):
+            r = rasters[idx]
+            self.createExtra(r, idx) 
+            rasterImpl = r.getRaster().rasterImp()
+            rasterImpls.append(rasterImpl)
+        return rasterImpls            
+
+    def createExtra(self, r, idx):
+        att = {'type' : 'float'}
+        att = {'name' : 'calculated band ' + str(idx)}
+        att = {'details' : {}}
+        self.extra = { 'temporalExtent' : r.temporalExtent, 'bands' : [att], 'epsg' : r.epsg}
 
     def base_run(self, job_id, processOutput, processInput):
         if self.runnable:
 
             put2Queue(processOutput, {'progress' : 0, 'job_id' : job_id, 'status' : 'running'})
 
-            if self.mapcalc:
-                oper = '@1' + self.operation + '@2'
-                outputRc = ilwis.do("mapcalc", oper, self.p1,self.p2)
-                outputRasters = []                
-                outputRasters.extend(self.setOutput([outputRc], self.extra))
-                out =  createOutput('finished', outputRasters, constants.DTRASTER)                
+            outputRasters = [] 
+            oper = '@1' + self.operation + '@2' 
+            outputs = []                               
+            if self.ismaps1 and self.ismaps2:
+                for idx in len(self.rasters1):
+                    outputRc = ilwis.do("mapcalc", oper, self.rasters1[idx],self.rasters2[idx])
+                    outputs.append(outputRc)
+            elif self.ismaps1 and not self.ismaps2:
+                    for idx in range(len(self.rasters1)):
+                        outputRc = ilwis.do("mapcalc", oper, self.rasters1[idx],self.p2)
+                        outputs.append(outputRc)
+            elif not self.ismaps1 and self.ismaps2:
+                    for idx in range(self.rasters1):
+                        outputRc = ilwis.do("mapcalc", oper, self.p1,self.rasters2[idx])
+                        outputs.append(outputRc)  
             else:
-                c = self.a * self.b
-                out = createOutput('finished', c, constants.DTNUMBER)
+                output = None
+                if self.operation in ['+','-', '/', '*', '<=', '>=', '==', 'or','and', 'xor']:
+                    expr = str(self.p1) + self.operation + str(self.p2)
+                    output = eval(expr)
+                elif self.operation in ['log']:
+                    expr = 'math.' + self.operation + '(' + str(self.p1)+ ',' +  str(self.p2) + ')'
+                    output = eval(expr)
+                out = createOutput('finished', output, constants.DTNUMBER) 
+
+            if self.ismaps1 or self.ismaps2:
+                outputRasters.extend(self.setOutput(outputs, self.extra))
+                out =  createOutput('finished', outputRasters, constants.DTRASTER)                
+              
+                
 
             put2Queue(processOutput,{'progress' : 100, 'job_id' : job_id, 'status' : 'finished'}) 
             return out
