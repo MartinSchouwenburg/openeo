@@ -80,7 +80,7 @@ class BaseBinarymapCalcBase(OpenEoOperation):
 
             if self.ismaps1:
                 self.rasters1 = self.extractRasters(self.p1)
-            if self.ismaps2 is RasterData:
+            if self.ismaps2 :
                 self.rasters2 = self.extractRasters(self.p2)
 
             self.operation = oper                           
@@ -97,11 +97,7 @@ class BaseBinarymapCalcBase(OpenEoOperation):
             rasterImpls.append(rasterImpl)
         return rasterImpls            
 
-    def createExtra(self, r, idx):
-        att = {'type' : 'float'}
-        att = {'name' : 'calculated band ' + str(idx)}
-        att = {'details' : {}}
-        self.extra = { 'temporalExtent' : r.temporalExtent, 'bands' : [att], 'epsg' : r.epsg}
+   
 
     def base_run(self, job_id, processOutput, processInput):
         if self.runnable:
@@ -120,7 +116,7 @@ class BaseBinarymapCalcBase(OpenEoOperation):
                         outputRc = ilwis.do("mapcalc", oper, self.rasters1[idx],self.p2)
                         outputs.append(outputRc)
             elif not self.ismaps1 and self.ismaps2:
-                    for idx in range(self.rasters1):
+                    for idx in range(len(self.rasters2)):
                         outputRc = ilwis.do("mapcalc", oper, self.p1,self.rasters2[idx])
                         outputs.append(outputRc)  
             else:
