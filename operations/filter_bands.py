@@ -2,7 +2,6 @@ from openeooperation import *
 from operationconstants import *
 from constants import constants
 from rasterdata import RasterData
-import ilwis
 
 class FilterBands(OpenEoOperation):
     def __init__(self):
