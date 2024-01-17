@@ -60,23 +60,24 @@ class OpenEOParameter:
 
 class OpenEOProcess(multiprocessing.Process):
     def __init__(self, user, request_json, id):
-        if not 'process' in request_json:
+
+        if not ('process' in request_json or 'process_graph' in request_json):
             raise Exception("missing \'process\' key in definition")
-        self.title = get('title', request_json, '')
-        self.description = get('description', request_json, '')
-        self.plan = get('plan', request_json, 'none')
-        self.budget = get('budget', request_json, constants.UNDEFNUMBER)
-        self.log_level = get('log_level', request_json, 'all')        
-        self.user = user
-        processValues = request_json['process']
+        old_api_version = 'process' in request_json # not all versions have a process key; some directly do process_graph        
+        if old_api_version:
+            self.title = get('title', request_json, '')
+            self.description = get('description', request_json, '')
+            self.plan = get('plan', request_json, 'none')
+            self.budget = get('budget', request_json, constants.UNDEFNUMBER)
+            self.log_level = get('log_level', request_json, 'all')        
+            self.user = user
+            processValues = request_json['process']
+        else:
+            processValues = request_json
+
         self.processGraph = None
 
-        if 'process_graph' in processValues:
-
-            self.processGraph = ProcessGraph(get('process_graph', processValues, None), None, getOperation)
-        else:
-            raise Exception("missing \'process_graph\' key in definition")  
-
+        self.processGraph = ProcessGraph(get('process_graph', processValues, None), None, getOperation)
         self.submitted = str(datetime.now())
         self.status = constants.STATUSCREATED
         self.updated =  ''
