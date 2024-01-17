@@ -158,26 +158,46 @@ class OpenEoOperation:
         grf = ilwis.GeoReference(rasters[0].coordinateSystem(), rasters[0].envelope() , rasters[0].size())
         rc = ilwis.RasterCoverage()
         rc.setGeoReference(grf) 
+        rc.setSize(ilwis.Size(rc.size().xsize, rc.size().ysize, 0))
         dom = ilwis.NumericDomain("code=integer")
-        rc.setStackDefinition(dom, stackIndexes)
+        #rc.setStackDefinition(dom, stackIndexes)
         rc.setDataDef(dataDefRaster)
+        print(rc.size().zsize)
 
-        for index in range(0, len(rasters)):
-            rc.setBandDefinition(index, rasters[index].datadef())
+       # for index in range(0, len(rasters)):
+       #     rc.setBandDefinition(index, rasters[index].datadef())
 
         return rc            
 
-   
+    def createExtra(self, r, idx):
+        att = {'type' : 'float'}
+        att = {'name' : 'calculated band ' + str(idx)}
+        att = {'details' : {}}
+        self.extra = { 'temporalExtent' : r.temporalExtent, 'bands' : [att], 'epsg' : r.epsg}
      
     def checkSpatialDimensions(self, rasters):
         pixelSize = 0
-        allSame = True        
+        allSame = True 
+        extent = []       
         for rc in rasters:
             if pixelSize == 0:
                 pixelSize = rc.getRaster().pixelSize()
             else:
                 if allSame:
                     allSame = pixelSize == rc.getRaster().pixelSize()
+                spExtentTarget = rc.spatialExtent
+                if len(extent) == 0:
+                    extent = rc.spatialExtent
+                else:  
+                    extentTest = rc.spatialExtent                  
+                    allSame = {
+                            extent[0] == extentTest[0] and  
+                            extent[1] == extentTest[1] and 
+                            extent[2] == extentTest[2] and
+                            extent[3] == extentTest[3]} 
+            if not allSame:
+                break
+                                                   
         return allSame 
 
     def setOutput(self, rasters, extra):
