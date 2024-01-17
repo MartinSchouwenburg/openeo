@@ -5,6 +5,7 @@ from constants import constants
 import common
 import pickle
 from pathlib import Path
+import os
 
 def linkSection(begin, end):
         return {
@@ -218,16 +219,19 @@ class ProcessManager:
             with open(path1, 'rb') as f:
                 self.processQueue = pickle.load(f)
         path2 = Path(path + '/processoutputs.bin')
-        if path2.is_file() :
-             with open(path2, 'rb') as f:
-                dump = pickle.load(f)
-                for output in dump.items():
-                    if output[1].status == constants.STATUSFINISHED:
-                        self.outputs[output[1].eoprocess.job_id] = output[1]
-                    elif output[1].status == constants.STATUSQUEUED:
-                        self.processQueue.append(output[1].eoporocess)
-                    elif output[1].status == constants.STATUSRUNNING:
-                        self.processQueue.append(output[1].eoporocess)                        
+        file_stats = os.stat(path2)
+        if file_stats.st_size > 0:
+            if path2.is_file() :
+                with open(path2, 'rb') as f:
+                    
+                    dump = pickle.load(f)
+                    for output in dump.items():
+                        if output[1].status == constants.STATUSFINISHED:
+                            self.outputs[output[1].eoprocess.job_id] = output[1]
+                        elif output[1].status == constants.STATUSQUEUED:
+                            self.processQueue.append(output[1].eoprocess)
+                        elif output[1].status == constants.STATUSRUNNING:
+                            self.processQueue.append(output[1].eoprocess)                        
 
 
     def changeOutputStatus(self):
