@@ -111,7 +111,13 @@ class ProcessGraph(OpenEoOperation):
     def determineOutputNodes(self, nodes):
         for node in nodes.items():
             if hasattr(node[1], 'result'):
-                self.outputNodes.append(node)   
+                self.outputNodes.append(node) 
+
+    def resolveParameter(self, parmKey):
+        if parmKey in self.processArguments:
+            return self.processArguments[parmKey]
+        #assume its the process builder key/name which is unknown to us as its a client something
+        return {'resolved': self.processArguments[0]}
 
 class NodeExecution :
 
@@ -185,6 +191,7 @@ class NodeExecution :
 
         return bandmathOperation                                                                                                                
 
+   
     def resolveNode(self, job_id, toServer, fromServer, parmKeyValue):
         if 'from_node' in parmKeyValue:
             referredNodeName = parmKeyValue[1]
@@ -197,7 +204,7 @@ class NodeExecution :
                         return referredNode[1].nodeValue['value']
                     return 'hmm'
         elif 'from_parameter' in parmKeyValue:
-                refNode = self.processNode.parentProcessGraph.processArguments[parmKeyValue[1]]
+                refNode = self.processNode.parentProcessGraph.resolveParameter(parmKeyValue[1])
                 if refNode['resolved'] != None:
                     return refNode['resolved'] 
                 return self.resolveNode(job_id, toServer, fromServer, refNode)  
