@@ -25,7 +25,7 @@ class ReduceDimensionsOperation(OpenEoOperation):
                 pgraph = self.reducer['process_graph']
                 args = self.data['base']
                 process = processGraph.ProcessGraph(pgraph, args, getOperation)
-                outputInfo = process.run(job_id, processOutput, processInput)
+                return process.run(job_id, processOutput, processInput)
             else:
                 return createOutput('finished', self.reducer['resolved'], constants.DTRASTER) 
         return createOutput('error', "operation no runnable", constants.DTERROR)
