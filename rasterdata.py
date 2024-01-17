@@ -9,6 +9,29 @@ import ilwis
 def isPrimitive(obj):
     return not hasattr(obj, '__dict__')
 
+def createNewRaster(rasters):
+    stackIndexes = []
+    for index in range(0, len(rasters)):
+        stackIndexes.append(index)
+
+    dataDefRaster = rasters[0].datadef()
+
+    for index in range(0, len(rasters)):
+        dfNum = rasters[index].datadef()
+        dataDefRaster = ilwis.DataDefinition.merge(dfNum, dataDefRaster)
+
+    grf = ilwis.GeoReference(rasters[0].coordinateSystem(), rasters[0].envelope() , rasters[0].size())
+    rc = ilwis.RasterCoverage()
+    rc.setGeoReference(grf) 
+    dom = ilwis.NumericDomain("code=integer")
+    rc.setStackDefinition(dom, stackIndexes)
+    rc.setDataDef(dataDefRaster)
+
+    for index in range(0, len(rasters)):
+        rc.setBandDefinition(index, rasters[index].datadef())
+
+    return rc 
+
 class RasterLayer:
     def fromMetadata(self, temporalMetadata, idx ):
         self.temporalExtent = temporalMetadata['extent']
@@ -36,35 +59,14 @@ class RasterImplementation:
     def name(self):
         return self.raster.name()
     
-    def createNewRaster(self, rasters):
-        stackIndexes = []
-        for index in range(0, len(rasters)):
-            stackIndexes.append(index)
-
-        dataDefRaster = rasters[0].datadef()
-
-        for index in range(0, len(rasters)):
-            dfNum = rasters[index].datadef()
-            dataDefRaster = ilwis.DataDefinition.merge(dfNum, dataDefRaster)
-
-        grf = ilwis.GeoReference(rasters[0].coordinateSystem(), rasters[0].envelope() , rasters[0].size())
-        rc = ilwis.RasterCoverage()
-        rc.setGeoReference(grf) 
-        dom = ilwis.NumericDomain("code=integer")
-        rc.setStackDefinition(dom, stackIndexes)
-        rc.setDataDef(dataDefRaster)
-
-        for index in range(0, len(rasters)):
-            rc.setBandDefinition(index, rasters[index].datadef())
-
-        return rc  
+    
         
 
 class RasterData:
     def fromEoReader(self, filepath):
         extraMetadata = self.loadExtraMetadata(filepath)
         mttime = os.path.getmtime(filepath)
-        self.lastmodified = datetime.datetime.fromtimestamp(mttime)
+        self.lastmodified = datetime.fromtimestamp(mttime)
         prod = Reader().open(filepath)
         self.stac_version = '1.0'
         self.type = 'File'
@@ -332,7 +334,6 @@ class RasterData:
     def getLayerIndexes(self, temporalExtent):
             first = parser.parse(temporalExtent[0])
             last = parser.parse(temporalExtent[1])
-            idx = 0
             idxs = []
             for layer in self.layers:
                 layerTempFirst = parser.parse(layer.temporalExtent[0])
