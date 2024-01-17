@@ -162,8 +162,7 @@ class OpenEoOperation:
         dom = ilwis.NumericDomain("code=integer")
         #rc.setStackDefinition(dom, stackIndexes)
         rc.setDataDef(dataDefRaster)
-        print(rc.size().zsize)
-
+     
        # for index in range(0, len(rasters)):
        #     rc.setBandDefinition(index, rasters[index].datadef())
 
