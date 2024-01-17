@@ -30,13 +30,14 @@ from openeofiles import OpenEODownloadFile
 from processmanager import globalProcessManager
 from threading import Thread
 from wellknown import WellKnown
+#from flask import request
 
 #init part
 
 app = Flask(__name__)
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_host=1, x_proto=1)
 app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
-CORS(app)
+
 api = Api(app)
 
 globalsSingleton.initGlobals()
@@ -70,7 +71,7 @@ api.add_resource( OpenEOUdfRuntimes,'/udf_runtimes')
 api.add_resource( OpenEODownloadFile,'/files/<string:filepath>')
 
 ##api.add_resource( OpenEODelete,'/jobs/<string:job_id>')
-
+CORS(app)
 
 def startProcesses():
     globalProcessManager.startProcesses()
