@@ -20,9 +20,19 @@ class ArrayElementOperation(OpenEoOperation):
             if self.inputRasters == None:
                 return "NotFound"
 
-            self.bandIndex = arguments['index']['resolved']  
-            if len(self.inputRasters) <= self.bandIndex:
-                return "Number of raster bands doesnt match given index"  
+            if 'index' in arguments:
+                self.bandIndex = arguments['index']['resolved']  
+                if len(self.inputRasters) <= self.bandIndex:
+                    return "Number of raster bands doesnt match given index"
+            if 'label' in arguments:
+                self.bandIndex = -1
+                for idx in range(len(self.inputRasters)):
+                    for item in self.inputRasters[idx].bands:
+                        if item['name'] == arguments['label']['resolved']:
+                            self.bandIndex = idx
+                            break
+                if self.bandIndex == -1:
+                    return "Label can't be found in the rasters"
             self.runnable = True
  
         except Exception as ex:
