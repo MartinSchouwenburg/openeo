@@ -219,19 +219,20 @@ class ProcessManager:
             with open(path1, 'rb') as f:
                 self.processQueue = pickle.load(f)
         path2 = Path(path + '/processoutputs.bin')
-        file_stats = os.stat(path2)
-        if file_stats.st_size > 0:
-            if path2.is_file() :
-                with open(path2, 'rb') as f:
-                    
-                    dump = pickle.load(f)
-                    for output in dump.items():
-                        if output[1].status == constants.STATUSFINISHED:
-                            self.outputs[output[1].eoprocess.job_id] = output[1]
-                        elif output[1].status == constants.STATUSQUEUED:
-                            self.processQueue.append(output[1].eoprocess)
-                        elif output[1].status == constants.STATUSRUNNING:
-                            self.processQueue.append(output[1].eoprocess)                        
+        if os.path.exists(path2):
+            file_stats = os.stat(path2)
+            if file_stats.st_size > 0:
+                if path2.is_file() :
+                    with open(path2, 'rb') as f:
+                        
+                        dump = pickle.load(f)
+                        for output in dump.items():
+                            if output[1].status == constants.STATUSFINISHED:
+                                self.outputs[output[1].eoprocess.job_id] = output[1]
+                            elif output[1].status == constants.STATUSQUEUED:
+                                self.processQueue.append(output[1].eoprocess)
+                            elif output[1].status == constants.STATUSRUNNING:
+                                self.processQueue.append(output[1].eoprocess)                        
 
 
     def changeOutputStatus(self):
@@ -248,6 +249,8 @@ class ProcessManager:
                 self.outputs[job_id].logs.append(item)
 
     def dumpProcessTables(self):
+        #for the moment disabled
+        """
         path = common.openeoip_config['data_locations']['system_files']['location']
         if len(self.processQueue) > 0:
             path1 = path + '/processqueue.bin'
@@ -256,7 +259,7 @@ class ProcessManager:
         if len(self.outputs) > 0:                
             path2 = path + '/processoutputs.bin'
             with open(path2, 'wb') as f:
-                pickle.dump(self.outputs, f)
+                pickle.dump(self.outputs, f) """
 
 globalProcessManager  = ProcessManager()
 
