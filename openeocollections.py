@@ -57,11 +57,7 @@ def loadCollections():
 
                             if Path(fullPath).suffix == ".metadata":
                                 raster.fromMetadataFile(fullPath)
-
                             else:    
-                                extraMetadata = None
-                                if filename in extraMetadataAll:
-                                    extraMetadata = extraMetadataAll[filename]
                                 raster.fromEoReader(fullPath)
 
                             if raster.id != None:
