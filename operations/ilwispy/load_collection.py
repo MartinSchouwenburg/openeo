@@ -48,7 +48,13 @@ class LoadCollectionOperation(OpenEoOperation):
 
     def prepare(self, arguments):
         try:
-            self.runnable = False  
+            self.runnable = False 
+            processOutput = None
+            job_id = None
+            if 'serverChannel' in arguments:
+                processOutput = arguments['serverChannel']
+                job_id = arguments['job_id']
+                           
             fileIdDatabase = getRasterDataSets()          
             self.inputRaster = fileIdDatabase[arguments['id']['resolved']]
             if self.inputRaster == None:
@@ -57,25 +63,8 @@ class LoadCollectionOperation(OpenEoOperation):
             self.dataSource = ''
             oldFolder = folder = self.inputRaster.dataFolder
             if  self.inputRaster.type == 'file':
-                self.dataSource = self.inputRaster.dataSource
-                
-                sourceList, unpack_folder = self.unpack(self.dataSource, folder)
-                for band in self.inputRaster.bands:
-                    source = sourceList[band['name']]
-                    band['source'] = source
-                  
-                folder = os.path.join(folder,unpack_folder)                     
-                self.inputRaster.dataFolder = folder
-                self.dataSource = folder
-                newDataSource = self.inputRaster.toMetadataFile(oldFolder)
-                mvfolder = os.path.join(oldFolder, 'original_data')
-                file_name = os.path.basename(self.inputRaster.dataSource)
-                if not os.path.isdir(mvfolder):
-                    os.mkdir(mvfolder)
-                shutil.move(self.inputRaster.dataSource, mvfolder + "/" + file_name) 
-                self.inputRaster.dataSource = newDataSource
-                fileIdDatabase[self.inputRaster.id] = self.inputRaster
-                saveIdDatabase(fileIdDatabase)                  
+                self.logProgress(processOutput, job_id,"load collection : transforming data", constants.STATUSRUNNING)                   
+                folder = self.transformOriginalData(fileIdDatabase, folder, oldFolder)                  
                 
             
             if 'bands'in arguments :
@@ -102,6 +91,28 @@ class LoadCollectionOperation(OpenEoOperation):
             return ""
 
         return ""
+
+    def transformOriginalData(self, fileIdDatabase, folder, oldFolder):
+        self.dataSource = self.inputRaster.dataSource
+                
+        sourceList, unpack_folder = self.unpack(self.dataSource, folder)
+        for band in self.inputRaster.bands:
+            source = sourceList[band['name']]
+            band['source'] = source
+
+        folder = os.path.join(folder,unpack_folder)                     
+        self.inputRaster.dataFolder = folder
+        self.dataSource = folder
+        newDataSource = self.inputRaster.toMetadataFile(oldFolder)
+        mvfolder = os.path.join(oldFolder, 'original_data')
+        file_name = os.path.basename(self.inputRaster.dataSource)
+        if not os.path.isdir(mvfolder):
+            os.mkdir(mvfolder)
+        shutil.move(self.inputRaster.dataSource, mvfolder + "/" + file_name) 
+        self.inputRaster.dataSource = newDataSource
+        fileIdDatabase[self.inputRaster.id] = self.inputRaster
+        saveIdDatabase(fileIdDatabase)
+        return folder
    
     def byLayer(self, bandIndexes, env):
         outputRasters = []

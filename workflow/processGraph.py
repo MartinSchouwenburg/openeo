@@ -146,6 +146,8 @@ class NodeExecution :
         if  processObj != None:
             ##arguments = self.processNode.argumentValues
             executeObj =  copy.deepcopy(processObj)
+            args['serverChannel'] = toServer
+            args['job_id'] = job_id
             message = executeObj.prepare(args)
             if  executeObj.runnable:
                 try:                

@@ -228,7 +228,8 @@ class OpenEoOperation:
         put2Queue(processOutput, log)
     
     def logStartOperation(self, processOutput, job_id):
-        return self.logProgress(processOutput, job_id, self.name,constants.STATUSRUNNING)
+        if processOutput != None:
+            return self.logProgress(processOutput, job_id, self.name,constants.STATUSRUNNING)
 
     def logEndOperation(self, processOutput, job_id):
         return self.logProgress(processOutput, job_id, 'finished ' + self.name,constants.STATUSFINISHED) 
