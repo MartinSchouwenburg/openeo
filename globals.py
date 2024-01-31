@@ -43,8 +43,8 @@ class Globals :
         items = self.internal_database.items()
         #if size ==0 then the scan on data location has not happened so we look into the saved properties of a previous scan
         if len(items) == 0:
-            self.loadIdDatabase()
-            items = self.internal_database.items()
+            if self.loadIdDatabase():
+                items = self.internal_database.items()
        
         for item in items:
             p = item[0]
@@ -77,10 +77,13 @@ class Globals :
         
         propertiesPath = os.path.join(propertiesFolder, 'id2filename.table')
         if ( os.path.exists(propertiesPath)):
-            with open(propertiesPath, 'rb') as f:
-                data = f.read()
-            self.internal_database = pickle.loads(data) 
-            return True
+            file_stats = os.stat(propertiesPath)
+            if file_stats.st_size > 0:
+                with open(propertiesPath, 'rb') as f:
+                    data = f.read()
+                self.internal_database = pickle.loads(data) 
+                return True
+        return False            
         
     def errorJson(self, errorStringCode, id, message):
         if errorStringCode == constants.CUSTOMERROR:
