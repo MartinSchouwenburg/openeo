@@ -28,4 +28,16 @@ def getRasterDataSets():
             f.close()
             lock.release()    
             raster_data_sets =  pickle.loads(data) 
-    return raster_data_sets            
+    return raster_data_sets
+
+def saveIdDatabase(idDatabse):
+        home = Path.home()
+        loc = openeoip_config['data_locations']['system_files']
+        sytemFolder = os.path.join(home, loc['location'])
+        propertiesFolder = os.path.join(home, sytemFolder)
+        if ( not os.path.exists(propertiesFolder)):
+            os.makedirs(propertiesFolder)
+        propsPath = os.path.join(propertiesFolder, 'id2filename.table')
+        propsFile = open(propsPath, 'wb')
+        pickle.dump(idDatabse, propsFile)
+        propsFile.close()             
