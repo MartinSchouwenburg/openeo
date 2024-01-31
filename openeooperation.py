@@ -129,20 +129,22 @@ class OpenEoOperation:
         
         return newGraph
 
-    def createOutput(self, idx, rasterList, extra):
+    def createOutput(self, idx, ilwisRaster, extra):
         rasterData = RasterData()
-        rasterData.fromRasterCoverage(rasterList, extra )
+        rasterData.fromRasterCoverage(ilwisRaster, extra )
         return rasterData
 
-    def copyToCollection(self, rasters):
-
-        rc = self.createNewRaster(rasters)
+    def collectRasters(self, rasters):
+        if len(rasters) == 1:
+            return rasters[0]
+        
+        ilwisRaster = self.createNewRaster(rasters)
 
         for index in range(0, len(rasters)):
             iter = rasters[index].begin()
-            rc.addBand(index, iter)
+            ilwisRaster.addBand(index, iter)
 
-        return rc
+        return ilwisRaster
 
     def createNewRaster(self, rasters):
         stackIndexes = []
@@ -199,12 +201,12 @@ class OpenEoOperation:
                                                    
         return allSame 
 
-    def setOutput(self, rasters, extra):
+    def setOutput(self, ilwisRasters, extra):
         outputRasters = []
-        if len(rasters) > 0:
+        if len(ilwisRasters) > 0:
             if self.rasterSizesEqual:
-                rasterList = self.copyToCollection(rasters)
-                outputRasters.append(self.createOutput(0, rasterList, extra))
+                ilwisRaster = self.collectRasters(ilwisRasters)
+                outputRasters.append(self.createOutput(0, ilwisRaster, extra))
             else:
                 count = 0
                 for rc in self.rasters:
