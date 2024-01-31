@@ -13,15 +13,19 @@ class NormalizedDifference(OpenEoOperation):
     def prepare(self, arguments):
         self.runnable = True
         self.rasterSizesEqual = True
-        self.inputRast1 = arguments['x']['resolved']
-        self.inoutRaster2 = arguments['y']['resolved']
-        self.createExtra(self.inputRast1, 0) 
+        self.inputRaster1 = arguments['x']['resolved']
+        self.inputRaster2 = arguments['y']['resolved']
+        if not( isinstance(self.inputRaster2, RasterData) and isinstance(self.inputRaster1, RasterData)):
+            return createOutput(False, "the parameter a is not a raster", constants.DTERROR)
+        
+        self.createExtra(self.inputRaster1, 0) 
         return ""
               
 
     def run(self, job_id, processOutput, processInput):
         if self.runnable:
-            outputRc = ilwis.do("mapcalc", "(@1 - @2) / (@1 + @2)", self.inputRast1.getRaster().rasterImp(), self.inoutRaster2.getRaster().rasterImp())
+            self.logStartOperation(processOutput, job_id)
+            outputRc = ilwis.do("mapcalc", "(@1 - @2) / (@1 + @2)", self.inputRaster1.getRaster().rasterImp(), self.inputRaster2.getRaster().rasterImp())
             outputRasters = []                
             outputRasters.extend(self.setOutput([outputRc], self.extra))
             return createOutput('finished', outputRasters, constants.DTRASTERLIST)
