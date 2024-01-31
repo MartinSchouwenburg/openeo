@@ -2,9 +2,13 @@ from openeooperation import *
 from operationconstants import *
 from constants import constants
 from rasterdata import *
-from common import getRasterDataSets
+from common import getRasterDataSets, saveIdDatabase
 import ilwis
 from pathlib import Path
+from eoreader import *
+from eoreader.bands import *
+import posixpath
+import shutil
 
 class LoadCollectionOperation(OpenEoOperation):
     def __init__(self):
@@ -14,21 +18,65 @@ class LoadCollectionOperation(OpenEoOperation):
         self.bandIdxs = []
         self.lyrIdxs = []
 
+    def unpack(self, data, folder):
+        #os.mkdir(folder)
+        reader = Reader()
+        prod = reader.open(data)
+        prod.output = folder
+        unpackFolderName = "unpacked_" + self.inputRaster.id
+        unpack_folder = os.path.join(folder, unpackFolderName)
+      
+        oldoutputs = []
+        sourceList = {}
+        for band in self.inputRaster.bands:
+            bandname = band['normalizedbandname']
+            nn = to_band(bandname)
+            prod.load(nn)
+            outputs = [f for f in prod.output.glob("tmp*/*.tif")]
+            s1 = set(oldoutputs)
+            s2 = set(outputs)
+            diff = list(s2 - s1)
+            oldoutputs = outputs
+            if len(diff) == 1:
+                sourceList[band['name']] = diff[0].name
+              
+
+        
+        os.rename(posixpath.dirname(outputs[0]), unpack_folder)
+        return sourceList, unpackFolderName
+
+
     def prepare(self, arguments):
         try:
-            self.runnable = False            
-            self.inputRaster = getRasterDataSets()[arguments['id']['resolved']]
+            self.runnable = False  
+            fileIdDatabase = getRasterDataSets()          
+            self.inputRaster = fileIdDatabase[arguments['id']['resolved']]
             if self.inputRaster == None:
                 return "NotFound"
             
             self.dataSource = ''
-            folder = ''
+            oldFolder = folder = self.inputRaster.dataFolder
             if  self.inputRaster.type == 'file':
                 self.dataSource = self.inputRaster.dataSource
-                folder = os.path.dirname(os.path.abspath(self.dataSource))
-            else:
-                folder = self.dataSource = self.inputRaster.dataFolder
-
+                
+                sourceList, unpack_folder = self.unpack(self.dataSource, folder)
+                for band in self.inputRaster.bands:
+                    source = sourceList[band['name']]
+                    band['source'] = source
+                  
+                folder = os.path.join(folder,unpack_folder)                     
+                self.inputRaster.dataFolder = folder
+                self.dataSource = folder
+                newDataSource = self.inputRaster.toMetadataFile(oldFolder)
+                mvfolder = os.path.join(oldFolder, 'original_data')
+                file_name = os.path.basename(self.inputRaster.dataSource)
+                if not os.path.isdir(mvfolder):
+                    os.mkdir(mvfolder)
+                shutil.move(self.inputRaster.dataSource, mvfolder + "/" + file_name) 
+                self.inputRaster.dataSource = newDataSource
+                fileIdDatabase[self.inputRaster.id] = self.inputRaster
+                saveIdDatabase(fileIdDatabase)                  
+                
             
             if 'bands'in arguments :
                 if arguments['bands']['resolved'] != None:
@@ -55,27 +103,56 @@ class LoadCollectionOperation(OpenEoOperation):
 
         return ""
    
+    def byLayer(self, bandIndexes, env):
+        outputRasters = []
+        for idx in bandIndexes:
+            bandIdxList = 'rasterbands(' + str(idx) + ')'
+            ilwisRasters = []
+            for lyrIdx in self.lyrIdxs:
+                layer = self.inputRaster.idx2layer(lyrIdx)
+                if layer != None: 
+                    datapath = os.path.join(self.dataSource, layer.dataSource)
+                    rband = ilwis.RasterCoverage(datapath)
+                    rc = ilwis.do("selection", rband, "envelope(" + env + ") with: " + bandIdxList)
+                    ilwisRasters.append(rc)
+
+            extra = self.constructExtraParams(self.inputRaster, self.temporalExtent, idx)
+            outputRasters.extend(self.setOutput(ilwisRasters, extra)) 
+
+            return outputRasters                   
+
+    def byBand(self, bandIndexes, env):
+        
+        outputRasters = []        
+        for idx in bandIndexes:
+            ilwisRasters = []
+           ## bandIdxList = 'rasterbands(' + str(0) + ')'
+            datapath = os.path.join(self.dataSource, self.inputRaster.bands[idx]['source'])                            
+            rband = ilwis.RasterCoverage(datapath)
+            ev = ilwis.Envelope("(" + env + ")")
+            if ev.equalsP(rband.envelope(), 0.001, 0.001, 0.001):
+                rc = ilwis.do("selection", rband, "envelope(" + env + ")" )
+                ilwisRasters.append(rc)
+            else:
+                ilwisRasters.append(rband) 
+            extra = self.constructExtraParams(self.inputRaster, self.temporalExtent, idx)
+            outputRasters.extend(self.setOutput(ilwisRasters, extra))    
+
+        return outputRasters                  
+        
     def run(self, job_id, processOutput, processInput):
         if self.runnable:
             self.logStartOperation(processOutput, job_id)
-            outputRasters = []
+            
             indexes = str(self.bandIdxs).lstrip('[').rstrip(']')
             indexes = [int(ele) for ele in indexes.split(',')]
             ext = self.inputRaster.spatialExtent
             env = str(ext[0]) + " " + str(ext[2]) + "," + str(ext[1]) + " " +str(ext[3])
-            for idx in indexes:
-                bandIdxList = 'rasterbands(' + str(idx) + ')'
-                rasters = []
-                for lyrIdx in self.lyrIdxs:
-                    layer = self.inputRaster.idx2layer(lyrIdx)
-                    if layer != None:    
-                        datapath = os.path.join(self.dataSource, layer.dataSource)
-                        rband = ilwis.RasterCoverage(datapath)
-                        rc = ilwis.do("selection", rband, "envelope(" + env + ") with: " + bandIdxList)
-                        rasters.append(rc)
 
-                extra = self.constructExtraParams(self.inputRaster, self.temporalExtent, idx)
-                outputRasters.extend(self.setOutput(rasters, extra))
+            if self.inputRaster.grouping == 'layer':
+                outputRasters = self.byLayer(indexes, env)
+            if self.inputRaster.grouping == 'band':                
+                outputRasters = self.byBand(indexes, env)
 
             ##self.logEndOperation(processOutput, job_id)
             return createOutput('finished', outputRasters, constants.DTRASTER)
