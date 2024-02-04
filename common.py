@@ -6,7 +6,9 @@ from multiprocessing import Lock
 
 lock = Lock()
 
-openeoip_configfile = open('./config/config.json')
+current_dir = os.path.dirname(os.path.abspath(__file__))
+configPath = os.path.join(current_dir,'config/config.json' )
+openeoip_configfile = open(configPath)
 openeoip_config = json.load(openeoip_configfile)
 
 codesfile = open('./config/default_error_codes.json')
@@ -31,6 +33,7 @@ def getRasterDataSets():
     return raster_data_sets
 
 def saveIdDatabase(idDatabse):
+        current_dir = os.path.dirname(os.path.abspath(__file__))
         home = Path.home()
         loc = openeoip_config['data_locations']['system_files']
         sytemFolder = os.path.join(home, loc['location'])

@@ -1,7 +1,31 @@
 import sys
 import os
+import pathlib
+import logging
 
-pp = os.getcwd()
+def initLogger():
+    logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
+    logger = logging.getLogger('openeo')
+    logger.setLevel(logging.INFO)
+    logpath = os.path.join(os.path.dirname(__file__), 'log')
+    if not os.path.exists(logpath):
+        os.mkdir(logpath)
+    fileHandler = logging.FileHandler("{0}/{1}.log".format(logpath, ' logfile' ))
+    fileHandler.setFormatter(logFormatter)
+    logger.addHandler(fileHandler)
+
+    consoleHandler = logging.StreamHandler()
+    consoleHandler.setFormatter(logFormatter)
+    logger.addHandler(consoleHandler)   
+
+initLogger()
+
+logger = logging.getLogger('openeo')
+logger.log(logging.INFO, '----------------------------------------------')
+logger.log(logging.INFO, 'server started, process id:' + str(os.getpid()))
+
+pp = pathlib.Path(__file__).parent.resolve()
+pp = str(pp)
 sys.path.append(pp + '/workflow')
 sys.path.append(pp + '/constants')
 sys.path.append(pp + '/operations')
@@ -42,6 +66,8 @@ api = Api(app)
 
 globalsSingleton.initGlobals()
 
+logger.log(logging.INFO, 'server started, initialization finished')
+
 @app.route('/')
 def index():
     CAPABILITIES = replace_links_in_capabilities()
@@ -78,6 +104,8 @@ def startProcesses():
 
 t1 = Thread(target=startProcesses)
 t1.start()
+
+
 
 
 if __name__ == '__main__':

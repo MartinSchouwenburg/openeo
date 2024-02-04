@@ -5,6 +5,7 @@ import pickle
 from operations.registerOperations import initOperationMetadata 
 from constants import constants
 import datetime
+import logging
 
 def getOperation(operationName)        :
     if  operationName in globalsSingleton.operations:
@@ -16,17 +17,22 @@ class Globals :
         if not hasattr(cls, 'instance'):
             cls.instance = super(Globals, cls).__new__(cls)
         return cls.instance
-
-    openeoip_config = None
-    internal_database = {}
-    operations = initOperationMetadata(getOperation)
+    try:
+        serverValid = True
+        openeoip_config = None
+        internal_database = {}
+        operations = initOperationMetadata(getOperation)
+    except Exception as ex:
+        serverValid = False
 
     def initGlobals(self):
         if  self.openeoip_config == None:
             openeoip_configfile = open('./config/config.json')
             self.openeoip_config = json.load(openeoip_configfile)
             codesfile = open('./config/default_error_codes.json')
-            self.default_errrors = json.load(codesfile)                    
+            self.default_errrors = json.load(codesfile)  
+
+                               
       
 
     def insertRasterInDatabase(self, raster):

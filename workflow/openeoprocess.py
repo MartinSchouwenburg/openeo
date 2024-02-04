@@ -61,8 +61,8 @@ class OpenEOParameter:
 class OpenEOProcess(multiprocessing.Process):
     def __init__(self, user, request_json, id):
 
-        if not ('process' in request_json or 'process_graph' in request_json):
-            raise Exception("missing \'process\' key in definition")
+        if not ('process' in request_json or  'process_graph' in request_json):
+           raise Exception("missing \'process\' key in definition")
         old_api_version = 'process' in request_json # not all versions have a process key; some directly do process_graph        
         if old_api_version:
             self.title = get('title', request_json, '')
