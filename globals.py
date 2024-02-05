@@ -5,7 +5,6 @@ import pickle
 from operations.registerOperations import initOperationMetadata 
 from constants import constants
 import datetime
-import logging
 import common
 
 def getOperation(operationName)        :

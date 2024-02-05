@@ -37,7 +37,7 @@ class BaseUnarymapCalc(OpenEoOperation):
 
     def base_run(self, job_id, processOutput, processInput):
         if self.runnable:
-
+            self.logStartOperation(processOutput, job_id)
             put2Queue(processOutput, {'progress' : 0, 'job_id' : job_id, 'status' : 'running'})
             if isinstance(self.parmValue, list):
                 outputRasters = []                                
@@ -49,11 +49,11 @@ class BaseUnarymapCalc(OpenEoOperation):
             else:
                 c = eval('math.' + self.operation + '(' + self.parmValue + ')')
                 out = createOutput('finished', c, constants.DTNUMBER)
-
+            self.logEndOperation(processOutput, job_id)
             put2Queue(processOutput,{'progress' : 100, 'job_id' : job_id, 'status' : 'finished'}) 
             return out
-            
-        return createOutput('error', "operation no runnable", constants.DTERROR)
+        message = common.notRunnableError(job_id)    
+        return createOutput('error', message, constants.DTERROR)
     
 class BaseBinarymapCalcBase(OpenEoOperation):
     def base_prepare(self, arguments, oper):
@@ -62,7 +62,9 @@ class BaseBinarymapCalcBase(OpenEoOperation):
             self.rasterSizesEqual = True
 
             if len(arguments) != 2:
-                return  createOutput(False,"number of parameters is not correct",  constants.DTERROR)
+                message =  "number of parameters is not correct in operation:" + self.name
+                common.logMessage(logging.ERROR,message)
+                return  createOutput(False,message,  constants.DTERROR)
             it = iter(arguments)
             self.p1 = arguments[next(it)]['resolved']
             self.p2 = arguments[next(it)]['resolved']
@@ -71,10 +73,14 @@ class BaseBinarymapCalcBase(OpenEoOperation):
 
             if not self.ismaps1: 
                 if math.isnan(self.p1):
-                    return createOutput(False, "the parameter a is not a number", constants.DTERROR)
+                    message =  "the parameter a is not a number in operation:" + self.name
+                    common.logMessage(logging.ERROR, message)
+                    return createOutput(False, message, constants.DTERROR)
             if not self.ismaps2:
                 if math.isnan(self.p2):
-                    return createOutput(False, "the parameter b is not a number", constants.DTERROR)                              
+                    message =  "the parameter b is not a number in operation:" + self.name
+                    common.logMessage(logging.ERROR, message)
+                    return createOutput(False, message, constants.DTERROR)                             
     
             self.runnable = True
 
@@ -101,7 +107,7 @@ class BaseBinarymapCalcBase(OpenEoOperation):
 
     def base_run(self, job_id, processOutput, processInput):
         if self.runnable:
-
+            self.logStartOperation(processOutput, job_id)
             put2Queue(processOutput, {'progress' : 0, 'job_id' : job_id, 'status' : 'running'})
 
             outputRasters = [] 
@@ -134,8 +140,8 @@ class BaseBinarymapCalcBase(OpenEoOperation):
                 out =  createOutput('finished', outputRasters, constants.DTRASTER)                
               
                 
-
+            self.logEndOperation(processOutput, job_id)
             put2Queue(processOutput,{'progress' : 100, 'job_id' : job_id, 'status' : 'finished'}) 
             return out
-            
+        common.notRunnableError(job_id)    
         return createOutput('error', "operation no runnable", constants.DTERROR)                        

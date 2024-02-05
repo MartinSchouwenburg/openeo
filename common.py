@@ -46,11 +46,19 @@ def saveIdDatabase(idDatabse):
         pickle.dump(idDatabse, propsFile)
         propsFile.close() 
 
+def logMessage(level, message):
+      logger = logging.getLogger('openeo')
+      logger.log(level, message)
+
+def notRunnableError(name, job_id):
+     message = "operation not runnable:" + name + "job id:" + str(job_id)
+     logMessage(logging.ERROR, message)
+     return message
+
 def makeFolder(path):
     try:
         if ( not os.path.exists(path)):
-            logger = logging.getLogger('openeo')
-            logger.log(logging.INFO, 'could not open:'+ path)
+            logMessage(logging.INFO, 'could not open:'+ path)
             os.makedirs(path)
     except Exception as ex:
         raise Exception('server error. could not make:' + path)         

@@ -165,10 +165,10 @@ class LoadCollectionOperation(OpenEoOperation):
             if self.inputRaster.grouping == 'band':                
                 outputRasters = self.byBand(indexes, env)
 
-            ##self.logEndOperation(processOutput, job_id)
+            self.logEndOperation(processOutput, job_id)
             return createOutput('finished', outputRasters, constants.DTRASTER)
-        
-        return createOutput('error', "operation not runnable", constants.DTERROR)
+        message = common.notRunnableError(job_id)
+        return createOutput('error', message, constants.DTERROR)
            
 def registerOperation():
      return LoadCollectionOperation()

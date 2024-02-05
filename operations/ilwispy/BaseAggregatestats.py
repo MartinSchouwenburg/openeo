@@ -43,7 +43,7 @@ class BaseAggregateData(OpenEoOperation):
                     extra = self.constructExtraParams(rc, rc.temporalExtent, 0)
                     outputRasters.extend(self.setOutput([outputRc], extra))
 
-                ##self.logEndOperation(processOutput, job_id)
+                self.logEndOperation(processOutput, job_id)
                 return createOutput('finished', outputRasters, constants.DTRASTER)
-        
-        return createOutput('error', "operation not runnable", constants.DTERROR)      
+        message = common.notRunnableError(job_id)
+        return createOutput('error', message, constants.DTERROR)      

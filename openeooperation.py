@@ -3,6 +3,8 @@ import json
 from constants import constants
 import ilwis
 from rasterdata import *
+import logging
+import common
 
 
 operations1 = {}
@@ -228,10 +230,11 @@ class OpenEoOperation:
         put2Queue(processOutput, log)
     
     def logStartOperation(self, processOutput, job_id):
-        if processOutput != None:
-            return self.logProgress(processOutput, job_id, self.name,constants.STATUSRUNNING)
+        common.logMessage(logging.INFO, 'started: ' + self.name + "with job id:" + str(job_id))
+        return self.logProgress(processOutput, job_id, self.name,constants.STATUSRUNNING)
 
     def logEndOperation(self, processOutput, job_id):
+        common.logMessage(logging.INFO, 'ended: ' + self.name + "with job id:" + str(job_id))
         return self.logProgress(processOutput, job_id, 'finished ' + self.name,constants.STATUSFINISHED) 
 
 def createOutput(status, value, datatype, format='')        :

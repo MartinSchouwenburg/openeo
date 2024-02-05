@@ -31,7 +31,6 @@ class SaveResultOperation(OpenEoOperation):
                     outpath = path + '/' + name
                     d.getRaster().rasterImp().store("file://" + outpath,self.format, "gdal")
                 
-                self.logEndOperation(processOutput, job_id) 
 
                 ext = ('.tif','.dat','.mpr','.tiff','.jpg', '.png')
                 file_names = [f for f in os.listdir(path) if f.endswith(ext)]
@@ -39,10 +38,10 @@ class SaveResultOperation(OpenEoOperation):
                 for filename in file_names:
                     fn = path + "/"  + filename
                     files.append(fn)
-
+            self.logEndOperation(processOutput, job_id)
             return createOutput('finished', files, constants.DTRASTERLIST)
-        
-        return createOutput('error', "operation no runnable", constants.DTERROR)
+        message = common.notRunnableError(job_id)
+        return createOutput('error', message, constants.DTERROR)
         
 def registerOperation():
      return SaveResultOperation()

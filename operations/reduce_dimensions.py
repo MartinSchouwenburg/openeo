@@ -3,6 +3,8 @@ from operationconstants import *
 from constants import constants
 from workflow import processGraph
 from globals import getOperation
+import logging
+import common
 
 class ReduceDimensionsOperation(OpenEoOperation):
     def __init__(self):
@@ -25,10 +27,14 @@ class ReduceDimensionsOperation(OpenEoOperation):
                 pgraph = self.reducer['process_graph']
                 args = self.data['base']
                 process = processGraph.ProcessGraph(pgraph, args, getOperation)
-                return process.run(job_id, processOutput, processInput)
+                output =  process.run(job_id, processOutput, processInput)
+                self.logEndOperation(processOutput, job_id)
+                return output
             else:
-                return createOutput('finished', self.reducer['resolved'], constants.DTRASTER) 
-        return createOutput('error', "operation no runnable", constants.DTERROR)
+                self.logEndOperation(processOutput, job_id)
+                return createOutput('finished', self.reducer['resolved'], constants.DTRASTER)
+        message = common.notRunnableError(job_id)           
+        return createOutput('error', message, constants.DTERROR)
         
 def registerOperation():
      return ReduceDimensionsOperation()

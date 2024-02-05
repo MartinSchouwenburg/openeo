@@ -2,6 +2,7 @@ import sys
 import os
 import pathlib
 import logging
+import common
 
 def initLogger():
     logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
@@ -19,10 +20,8 @@ def initLogger():
     logger.addHandler(consoleHandler)   
 
 initLogger()
-
-logger = logging.getLogger('openeo')
-logger.log(logging.INFO, '----------------------------------------------')
-logger.log(logging.INFO, 'server started, process id:' + str(os.getpid()))
+common.logMessage(logging.INFO, '----------------------------------------------')
+common.logMessage(logging.INFO, 'server started, process id:' + str(os.getpid()))
 
 pp = pathlib.Path(__file__).parent.resolve()
 pp = str(pp)
@@ -54,6 +53,7 @@ from openeofiles import OpenEODownloadFile
 from processmanager import globalProcessManager
 from threading import Thread
 from wellknown import WellKnown
+import common
 #from flask import request
 
 #init part
@@ -66,7 +66,7 @@ api = Api(app)
 
 globalsSingleton.initGlobals()
 
-logger.log(logging.INFO, 'server started, initialization finished')
+common.logMessage(logging.INFO, 'server started, initialization finished')
 
 @app.route('/')
 def index():
