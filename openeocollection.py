@@ -5,6 +5,7 @@ from eoreader.bands import *
 from openeocollections import loadCollections
 from rasterdata import RasterData
 from processmanager import makeBaseResponseDict
+import logging
 
 class OpenEOIPCollection(Resource):
     def get(self, name):
@@ -21,6 +22,8 @@ class OpenEOIPCollection(Resource):
             longDict = raster.toLongDictDefinition()
             return make_response(jsonify(longDict),200)
         except Exception as ex:
+            logger = logging.getLogger('openeo')
+            logger.log(logging.ERROR, str(ex))  
             return make_response(makeBaseResponseDict(-1, 'error', 400, None, str(ex)),400)
         
     def getInstrument(self, value):

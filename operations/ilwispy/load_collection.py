@@ -9,6 +9,7 @@ from eoreader import *
 from eoreader.bands import *
 import posixpath
 import shutil
+import common
 
 class LoadCollectionOperation(OpenEoOperation):
     def __init__(self):
@@ -106,8 +107,7 @@ class LoadCollectionOperation(OpenEoOperation):
         newDataSource = self.inputRaster.toMetadataFile(oldFolder)
         mvfolder = os.path.join(oldFolder, 'original_data')
         file_name = os.path.basename(self.inputRaster.dataSource)
-        if not os.path.isdir(mvfolder):
-            os.mkdir(mvfolder)
+        common.makeFolder(mvfolder)
         shutil.move(self.inputRaster.dataSource, mvfolder + "/" + file_name) 
         self.inputRaster.dataSource = newDataSource
         fileIdDatabase[self.inputRaster.id] = self.inputRaster
@@ -130,7 +130,7 @@ class LoadCollectionOperation(OpenEoOperation):
             extra = self.constructExtraParams(self.inputRaster, self.temporalExtent, idx)
             outputRasters.extend(self.setOutput(ilwisRasters, extra)) 
 
-            return outputRasters                   
+        return outputRasters                   
 
     def byBand(self, bandIndexes, env):
         

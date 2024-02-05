@@ -3,6 +3,7 @@ from pathlib import Path
 import os
 import pickle
 from multiprocessing import Lock
+import logging
 
 lock = Lock()
 
@@ -43,4 +44,13 @@ def saveIdDatabase(idDatabse):
         propsPath = os.path.join(propertiesFolder, 'id2filename.table')
         propsFile = open(propsPath, 'wb')
         pickle.dump(idDatabse, propsFile)
-        propsFile.close()             
+        propsFile.close() 
+
+def makeFolder(path):
+    try:
+        if ( not os.path.exists(path)):
+            logger = logging.getLogger('openeo')
+            logger.log(logging.INFO, 'could not open:'+ path)
+            os.makedirs(path)
+    except Exception as ex:
+        raise Exception('could not make:' + path)         

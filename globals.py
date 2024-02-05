@@ -6,6 +6,7 @@ from operations.registerOperations import initOperationMetadata
 from constants import constants
 import datetime
 import logging
+import common
 
 def getOperation(operationName)        :
     if  operationName in globalsSingleton.operations:
@@ -66,8 +67,8 @@ class Globals :
         loc = globalsSingleton.openeoip_config['data_locations']['system_files']
         sytemFolder = os.path.join(home, loc['location'])
         propertiesFolder = os.path.join(home, sytemFolder)
-        if ( not os.path.exists(propertiesFolder)):
-            os.makedirs(propertiesFolder)
+        common.makeFolder(propertiesFolder)
+                        
         propsPath = os.path.join(propertiesFolder, 'id2filename.table')
         propsFile = open(propsPath, 'wb')
         pickle.dump(self.internal_database, propsFile)
@@ -78,8 +79,7 @@ class Globals :
         loc = globalsSingleton.openeoip_config['data_locations']['system_files']
         sytemFolder = os.path.join(home, loc['location'])        
         propertiesFolder = os.path.join(home, sytemFolder)
-        if ( not os.path.exists(propertiesFolder)):
-            return False
+        common.makeFolder(propertiesFolder)
         
         propertiesPath = os.path.join(propertiesFolder, 'id2filename.table')
         if ( os.path.exists(propertiesPath)):
