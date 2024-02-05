@@ -53,4 +53,4 @@ def makeFolder(path):
             logger.log(logging.INFO, 'could not open:'+ path)
             os.makedirs(path)
     except Exception as ex:
-        raise Exception('could not make:' + path)         
+        raise Exception('server error. could not make:' + path)         
